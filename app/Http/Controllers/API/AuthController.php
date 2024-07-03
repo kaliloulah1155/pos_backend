@@ -292,7 +292,7 @@ class AuthController extends Controller
             //FIN GESTION DES MENUS
             if ($user) {
 
-                $user['image'] = $user->image == null ? $user->image : env('IMAGE_PATH_USERS').Storage::url('users/'.$user->image);
+                $user['image'] = $user->image == null ? $user->image : env('IMAGE_PATH_USERS').$user->image;
 
                 $user['profile_name'] = Profil::where('id', $user->profil_id)->value('libelle');
 
