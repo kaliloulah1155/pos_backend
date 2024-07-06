@@ -83,14 +83,14 @@ class MenuController extends Controller
     public function store(StoreRequest $request)
     {
         try {
-            
-            $r_positions = DB::select('CALL sp_menu_max()');
+        
+            $r_positions = DB::table('menus')->count();
             $menu = Menu::create([
                 'libelle' => $request->libelle,
                 'target' => $request->target,
                 'type' => $request->type,
                 'icon' => $request->icon,
-                'position' => intval($r_positions[0]->positions)+1,
+                'position' => intval($r_positions)+1,
                 'name' => $request->name,
                 'statut' => $request->statut,
                 'menu_id' => $request->menu_id,

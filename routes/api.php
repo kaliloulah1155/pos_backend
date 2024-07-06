@@ -68,7 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('actions/{id}', [ActionController::class, 'show']);
         Route::delete('actions/{id}', [ActionController::class, 'destroy']);
         Route::delete('actions/dl/{id}', [ActionController::class, 'delete']);
-
+  
         //MENU
         Route::get('menus', [MenuController::class, 'index']);
         Route::post('menus', [MenuController::class, 'store']);

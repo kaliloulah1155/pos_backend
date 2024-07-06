@@ -232,12 +232,18 @@ class AuthController extends Controller
 
             $menusPerPage = 100;
 
+           
             $dataMenus = DB::table('menus')
-                ->select('menus.*')
-                ->where('menus.statut', 1)
-                ->where('menus.deleted_at', null)
-                ->orderBy('menus.position', 'ASC')
-                ->simplePaginate($menusPerPage);
+            ->select('menus.*', 'permissions.*')
+            ->leftJoin('permissions', 'menus.id', '=', 'permissions.menu_id')
+            ->where('menus.statut', 1)
+            ->whereNull('menus.deleted_at')
+            ->where('permissions.profil_id', $id)
+            ->orderBy('menus.position', 'ASC')
+             ->simplePaginate($menusPerPage);
+
+             
+                
             $pageCount = count(Menu::all()) / $menusPerPage;
 
            
@@ -265,6 +271,8 @@ class AuthController extends Controller
                 foreach ($dataMenus as $dataMenu) {
                     $id_menu = $dataMenu->id;
                     $lib_menu_lib = $dataMenu->libelle;
+                    $lib_menu_icon = $dataMenu->icon;
+                    $lib_menu_path = $dataMenu->target;
                     $res_action = [];
                     foreach ($dataActions as $all_action) {
                         $perm = false;
@@ -283,8 +291,10 @@ class AuthController extends Controller
                     $result[] = [
                         'resourceId' => $id_menu,
                         'resourceName' => $lib_menu_lib,
+                        'resourceIcon' => $lib_menu_icon,
+                        'resourcePath' => $lib_menu_path,
                         'page_count' => ceil($pageCount),
-                        'permissions' => array_diff_key($res_action),
+                        //'permissions' => array_diff_key($res_action),
                     ];
                 }       
             }
