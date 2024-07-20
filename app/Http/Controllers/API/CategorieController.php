@@ -76,6 +76,26 @@ class CategorieController extends Controller
         }
     }
 
+
+     /**
+     * @OA\Get (
+     *     path="/categories_slug/{slug}",
+     *     tags={"Catégories"},
+     *     summary="Affiche les détails d'une catégorie",
+     *     description="Retourne tous les détails d'une catégorie",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         in="path",
+     *         name="slug",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="success",
+     *     )
+     * )
+     */
     public function index_slug($slug)
     {
         try {
@@ -112,6 +132,48 @@ class CategorieController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     */
+
+      /**
+     *
+     * @OA\Post (
+     *     path="/categories",
+     *     tags={"Catégories"},
+     *     summary="Ajouter une catégorie",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"libelle", "slug","status"},
+     *                 @OA\Property(
+     *                     property="libelle",
+     *                     type="string",
+     *                      description="Libellé"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="code",
+     *                     type="string",
+     *                     description="Code"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="slug",
+     *                     type="string",
+     *                     description="Slug"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="position",
+     *                     type="integer",
+     *                     description="Slug"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success"
+     *     )
+     * )
      */
     public function store(StoreRequest $request)
     {

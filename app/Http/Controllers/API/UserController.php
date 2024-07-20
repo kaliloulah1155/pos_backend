@@ -113,8 +113,17 @@ class UserController extends Controller
 
         }
     }
-    /**
-     * Liste des clients
+     /**
+     * @OA\Get(
+     *     path="/clients",
+     *     tags={"Clients"},
+     *      summary="Récupération de la liste des clients",
+     *      description="Retourne toute la liste des clients",
+     *      @OA\Response(response=200,description="succès"),
+     *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
+     *      @OA\Response(response=404, description="Ressource introuvable"),
+     *       security={{"sanctum":{}}}  
+     * ),
      */
     public function clients()
     {

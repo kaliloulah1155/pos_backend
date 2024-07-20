@@ -20,7 +20,7 @@ Route::group(['prefix' => '/v1'], function () {
 
     //Password reset
     Route::post('forgot', [AuthController::class, 'forgot']);
-    Route::post('reset', [AuthController::class, 'reset']);
+    Route::post('resetpwd', [AuthController::class, 'resetpwd']);
     
     Route::get('test',function(){
         return response()->json(['message' => 'API test successful']);

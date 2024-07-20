@@ -14,7 +14,7 @@ class ForgotPasswordRequest extends FormRequest
     {
         return !($user=auth()->user()) || !($user instanceof User);
     }
-
+    
     /**
      * Get the validation rules that apply to the request.
      *

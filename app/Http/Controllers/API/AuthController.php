@@ -55,6 +55,42 @@ class AuthController extends Controller
         }
     }
 
+
+     /**
+     * Display a listing of the resource.
+     */
+    /**
+     *
+     * @OA\Post (
+     *     path="/login",
+     *     tags={"Authentifications"},
+     *     summary="Connexion d'un utilisateur",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"login", "password"},
+     *                 @OA\Property(
+     *                     property="login",
+     *                     type="string",
+     *                     example="login",
+     *                      description="E-mail ou N° de téléphone"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="password",
+     *                     type="string",
+     *                     example="password"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success"
+     *     )
+     * )
+     */
     public function login(LoginRequest $request)
     {
         try {
@@ -144,7 +180,34 @@ class AuthController extends Controller
         //
     }
 
-    public function forgot(ForgotPasswordRequest $request)
+
+     /**
+     *
+     * @OA\Post (
+     *     path="/forgot",
+     *     tags={"Authentifications"},
+     *     summary="Mot de passe oublié",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"email"},
+     *                 @OA\Property(
+     *                     property="email",
+     *                     type="string",
+     *                      description="E-mail"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success"
+     *     )
+     * )
+     */
+    public function forgot(Request $request)
     {
 
         $user = ($query = User::query());
@@ -172,6 +235,7 @@ class AuthController extends Controller
 
             new PasswordResetNotification($user)
         );
+       
 
         return response()->json([
             'message' => "Un code vous a été envoyé sur votre adresse email",
@@ -179,8 +243,43 @@ class AuthController extends Controller
 
     }
 
-    public function reset(ResetPasswordRequest $request)
+
+
+     /**
+     *
+     * @OA\Post (
+     *     path="/resetpwd",
+     *     tags={"Authentifications"},
+     *     summary="Modification du mot de passe oublié",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"token","password"},
+     *                 @OA\Property(
+     *                     property="token",
+     *                     type="integer",
+     *                      description="Code OTP recu par e-mail"
+     *                 ),
+     *                  @OA\Property(
+     *                     property="password",
+     *                     type="string",
+     *                      description="Nouveau mot de passe"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success"
+     *     )
+     * )
+     */
+
+    public function resetpwd(Request $request)
     {
+       
 
         $resetRequest = PasswordReset::where('token', $request->token)->first();
 
@@ -215,7 +314,19 @@ class AuthController extends Controller
         ], 201);
 
     }
-
+    
+     /**
+     * @OA\Get(
+     *     path="/infoUser",
+     *     tags={"Authentifications"},
+     *      summary="Récupération des infos de l'utilisateur connecté",
+     *      description="Retourne tous les infos de l' utilisateurs",
+     *      @OA\Response(response=200,description="succès"),
+     *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
+     *      @OA\Response(response=404, description="Ressource introuvable"),
+     *       security={{"sanctum":{}}}  
+     * ),
+     */
     public function getUserInfo(Request $request)
     {
         try {

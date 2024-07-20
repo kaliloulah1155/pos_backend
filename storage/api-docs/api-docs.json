@@ -1,0 +1,283 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "GESTOCK CI",
+        "description": "Projet de gestion des points de vente",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api/v1",
+            "description": "Lien en local"
+        },
+        {
+            "url": "https://pos789456123.kewoustore.com/api/v1",
+            "description": "Lien de la recette"
+        }
+    ],
+    "paths": {
+        "/login": {
+            "post": {
+                "tags": [
+                    "Authentifications"
+                ],
+                "summary": "Connexion d'un utilisateur",
+                "operationId": "d618a255475240ba3d40cc39692cd924",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "description": "E-mail ou N° de téléphone",
+                                        "type": "string",
+                                        "example": "login"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/forgot": {
+            "post": {
+                "tags": [
+                    "Authentifications"
+                ],
+                "summary": "Mot de passe oublié",
+                "operationId": "97040f9bd5808b2693ccf9116780750e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "E-mail",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/resetpwd": {
+            "post": {
+                "tags": [
+                    "Authentifications"
+                ],
+                "summary": "Modification du mot de passe oublié",
+                "operationId": "c79acb2b37a9462dab5bde87fee7ff83",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "description": "Code OTP recu par e-mail",
+                                        "type": "integer"
+                                    },
+                                    "password": {
+                                        "description": "Nouveau mot de passe",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/infoUser": {
+            "get": {
+                "tags": [
+                    "Authentifications"
+                ],
+                "summary": "Récupération des infos de l'utilisateur connecté",
+                "description": "Retourne tous les infos de l' utilisateurs",
+                "operationId": "003ef062b3a4235bd7efdf58c5612c3a",
+                "responses": {
+                    "200": {
+                        "description": "succès"
+                    },
+                    "401": {
+                        "description": "Token expiré | Token invalide | Token absent "
+                    },
+                    "404": {
+                        "description": "Ressource introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/categories_slug/{slug}": {
+            "get": {
+                "tags": [
+                    "Catégories"
+                ],
+                "summary": "Affiche les détails d'une catégorie",
+                "description": "Retourne tous les détails d'une catégorie",
+                "operationId": "8fcd47f097c8237f477edcef7d0d2b29",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/categories": {
+            "post": {
+                "tags": [
+                    "Catégories"
+                ],
+                "summary": "Ajouter une catégorie",
+                "operationId": "90a9974ab88bb3c7ffe8e9a1edf2f7ec",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "libelle",
+                                    "slug",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "libelle": {
+                                        "description": "Libellé",
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "description": "Code",
+                                        "type": "string"
+                                    },
+                                    "slug": {
+                                        "description": "Slug",
+                                        "type": "string"
+                                    },
+                                    "position": {
+                                        "description": "Slug",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/clients": {
+            "get": {
+                "tags": [
+                    "Clients"
+                ],
+                "summary": "Récupération de la liste des clients",
+                "description": "Retourne toute la liste des clients",
+                "operationId": "10b0cd93b71e5b2879518c9127ad5ef7",
+                "responses": {
+                    "200": {
+                        "description": "succès"
+                    },
+                    "401": {
+                        "description": "Token expiré | Token invalide | Token absent "
+                    },
+                    "404": {
+                        "description": "Ressource introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentifications",
+            "description": "Authentifications"
+        },
+        {
+            "name": "Catégories",
+            "description": "Catégories"
+        },
+        {
+            "name": "Clients",
+            "description": "Clients"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Enter token in format (Bearer <token>)",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    }
+}
