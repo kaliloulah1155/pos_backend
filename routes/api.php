@@ -1,17 +1,18 @@
 <?php
 
-use App\Http\Controllers\API\ActionController;
-use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\CategorieController;
-use App\Http\Controllers\API\MenuController;
-use App\Http\Controllers\API\ProfilController;
-use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\DepenseController;
-use App\Http\Controllers\API\SalaireController;
-use App\Http\Controllers\API\PermissionController;
-use App\Http\Controllers\API\TestCartController;
-use App\Http\Controllers\API\ProduitController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\MenuController;
+use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\API\ActionController;
+use App\Http\Controllers\API\ProfilController;
+use App\Http\Controllers\API\DepenseController;
+use App\Http\Controllers\API\ProduitController;
+use App\Http\Controllers\API\SalaireController;
+use App\Http\Controllers\API\TestCartController;
+use App\Http\Controllers\API\CategorieController;
+use App\Http\Controllers\API\PermissionController;
          
 Route::group(['prefix' => '/v1'], function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -27,6 +28,10 @@ Route::group(['prefix' => '/v1'], function () {
     });
     
      Route::get('printOrder/{id}', [TestCartController::class, 'pdfOrder']); //imprimer de la commande
+
+     //LISTE DES COMMANDES
+     Route::get('orders', [OrderController::class, 'index']);
+     //FIN::COMMANDES
 });
 
 Route::middleware('auth:sanctum')->group(function () {

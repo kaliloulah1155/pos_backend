@@ -229,6 +229,47 @@
                 }
             }
         },
+        "/orders": {
+            "get": {
+                "tags": [
+                    "Commandes"
+                ],
+                "summary": "Liste des commandes | start_date et end_date ne sont pas obligatoires",
+                "operationId": "8dde1c1ae8cabae242c1a5be03108d24",
+                "parameters": [
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Date et heure de début 2024-05-28 00:00:00",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Date et heure de fin 2024-05-28 00:00:00",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/clients": {
             "get": {
                 "tags": [
@@ -254,6 +295,156 @@
                     }
                 ]
             }
+        },
+        "/fournisseurs": {
+            "get": {
+                "tags": [
+                    "Fournisseurs"
+                ],
+                "summary": "Récupération de la liste des fournisseurs",
+                "description": "Retourne toute la liste des fournisseurs",
+                "operationId": "ffa1b640794e1a76b07bc2151856452a",
+                "responses": {
+                    "200": {
+                        "description": "succès"
+                    },
+                    "401": {
+                        "description": "Token expiré | Token invalide | Token absent "
+                    },
+                    "404": {
+                        "description": "Ressource introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "tags": [
+                    "Utilisateurs"
+                ],
+                "summary": "Récupération de la liste des utilisateurs",
+                "description": "Retourne toute la liste des utilisateurs",
+                "operationId": "4912d83c790d90d55874bbb5347b274f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "succès"
+                    },
+                    "401": {
+                        "description": "Token expiré | Token invalide | Token absent "
+                    },
+                    "404": {
+                        "description": "Ressource introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Utilisateurs"
+                ],
+                "summary": "Mise à jour d'un utilisateur",
+                "operationId": "ba7188b25e42eb6f5cabdeff47d5ced8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "L'identifiant de l'utilisateur",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "description": "Nom de l'utilisateur.",
+                                        "type": "string"
+                                    },
+                                    "prenoms": {
+                                        "description": "Prénom de l'utilisateur.",
+                                        "type": "string"
+                                    },
+                                    "adresse": {
+                                        "description": "Adresse de l'utilisateur.",
+                                        "type": "string"
+                                    },
+                                    "telephone": {
+                                        "description": "N° de téléphone de l'utilisateur",
+                                        "type": "string"
+                                    },
+                                    "isAdmin": {
+                                        "description": "1=> true | 0 => false.",
+                                        "type": "integer"
+                                    },
+                                    "isActive": {
+                                        "description": "1=> true | 0 => false.",
+                                        "type": "integer"
+                                    },
+                                    "sexe": {
+                                        "description": "Genre de l'utilisateur M=>Masculin | F=>Féminin.",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "E-mail de l'utilisateur.",
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "description": "Mot de passe de l'utilisateur.",
+                                        "type": "string"
+                                    },
+                                    "password_confirmation": {
+                                        "description": "Confirmation du mot de passe de l'utilisateur.",
+                                        "type": "string"
+                                    },
+                                    "image": {
+                                        "description": "Charger votre photo.",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "profil_id": {
+                                        "description": "Voir l'identifiant du profil(table profil).",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "tags": [
@@ -266,8 +457,20 @@
             "description": "Catégories"
         },
         {
+            "name": "Commandes",
+            "description": "Commandes"
+        },
+        {
             "name": "Clients",
             "description": "Clients"
+        },
+        {
+            "name": "Fournisseurs",
+            "description": "Fournisseurs"
+        },
+        {
+            "name": "Utilisateurs",
+            "description": "Utilisateurs"
         }
     ],
     "components": {

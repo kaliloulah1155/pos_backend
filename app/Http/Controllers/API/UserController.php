@@ -174,6 +174,18 @@ class UserController extends Controller
     /**
      * Liste des fournisseurs 
      */
+      /**
+     * @OA\Get(
+     *     path="/fournisseurs",
+     *     tags={"Fournisseurs"},
+     *      summary="Récupération de la liste des fournisseurs",
+     *      description="Retourne toute la liste des fournisseurs",
+     *      @OA\Response(response=200,description="succès"),
+     *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
+     *      @OA\Response(response=404, description="Ressource introuvable"),
+     *       security={{"sanctum":{}}}  
+     * ),
+     */
     public function fournisseurs()
     {
         try {
@@ -223,6 +235,24 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
+      /**
+     * @OA\Get(
+     *     path="/users/{id}",
+     *     tags={"Utilisateurs"},
+     *      summary="Récupération de la liste des utilisateurs",
+     *      description="Retourne toute la liste des utilisateurs",
+     *      @OA\Parameter(
+     *         in="path",
+     *         name="id",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *      @OA\Response(response=200,description="succès"),
+     *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
+     *      @OA\Response(response=404, description="Ressource introuvable"),
+     *       security={{"sanctum":{}}}  
+     * ),
+     */
     public function show(int $id)
     {
         try {
@@ -247,6 +277,95 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * @OA\Post (
+     *     path="/users/{id}",
+     *     tags={"Utilisateurs"},
+     *     summary="Mise à jour d'un utilisateur",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         description="L'identifiant de l'utilisateur",
+     *         required=true,
+     *         in="path",
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     property="nom",
+     *                     type="string",
+     *                     description="Nom de l'utilisateur."
+     *                 ),
+     *                 @OA\Property(
+     *                     property="prenoms",
+     *                     type="string",
+     *                     description="Prénom de l'utilisateur."
+     *                 ),
+     *                 @OA\Property(
+     *                     property="adresse",
+     *                     type="string",
+     *                     description="Adresse de l'utilisateur."
+     *                 ),
+     *                 @OA\Property(
+     *                     property="telephone",
+     *                     type="string",
+     *                     description="N° de téléphone de l'utilisateur"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="isAdmin",
+     *                     type="integer",
+     *                     description="1=> true | 0 => false."
+     *                 ),
+     *                 @OA\Property(
+     *                     property="isActive",
+     *                     type="integer",
+     *                     description="1=> true | 0 => false."
+     *                 ),
+     *                 @OA\Property(
+     *                     property="sexe",
+     *                     type="string",
+     *                     description="Genre de l'utilisateur M=>Masculin | F=>Féminin."
+     *                 ),
+     *                  @OA\Property(
+     *                     property="email",
+     *                     type="string",
+     *                     description="E-mail de l'utilisateur."
+     *                 ),
+     *                @OA\Property(
+     *                     property="password",
+     *                     type="string",
+     *                     description="Mot de passe de l'utilisateur."
+     *                 ),
+     *                   @OA\Property(
+     *                     property="password_confirmation",
+     *                     type="string",
+     *                     description="Confirmation du mot de passe de l'utilisateur."
+     *                 ),
+     *                 @OA\Property(
+     *                     property="image",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="Charger votre photo."
+     *                 ),
+     *                  @OA\Property(
+     *                     property="profil_id",
+     *                     type="integer",
+     *                     description="Voir l'identifiant du profil(table profil)."
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success"
+     *     )
+     * )
+     */
     public function update(UpdateRequest $request, int $id)
     {
         try {
