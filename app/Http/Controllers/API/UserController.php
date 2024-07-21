@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\API;
 
-use DB;
-use Carbon\Carbon;
-use App\Models\User;
-use App\Models\Profil;
-use Illuminate\Http\Response;
-use App\Services\ImageService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\UpdateRequest;
+use App\Models\Profil;
+use App\Models\User;
+use App\Services\AmountFormatService;
+use App\Services\ImageService;
+use Carbon\Carbon;
+use DB;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\User\UpdateRequest;
 
 class UserController extends Controller
 {
@@ -37,9 +38,9 @@ class UserController extends Controller
                     'prenoms' => $user->prenoms,
                     'email' => $user->email,
                     'telephone' => $user->telephone,
-                    'image' => $user->image ,
+                    'image' => $user->image,
                     'lib_active' => $lib_active,
-                    'profile_name' => $user->profil_id !=null ?  Profil::find($user->profil_id)->libelle :null,
+                    'profile_name' => $user->profil_id != null ? Profil::find($user->profil_id)->libelle : null,
 
                     // Add more properties if needed
                 ];
@@ -65,22 +66,21 @@ class UserController extends Controller
     public function employes()
     {
         try {
-           
+
             $users = DB::table('users')
                 ->join('profils', 'users.profil_id', '=', 'profils.id')
                 ->whereNotIn('profils.libelle', ['Client', 'Fournisseur'])
-                ->where('users.deleted_at','=',null)
+                ->where('users.deleted_at', '=', null)
                 ->select('users.*')
                 ->get();
-                 
-                
+
             $mappedUsers = $users->map(function ($user) {
                 $lib_active = "Désactivé";
                 if ($user->isActive == 1) {
                     $lib_active = "Activé";
                 }
-                 
-                 return [
+
+                return [
                     'id' => $user->id,
                     'fullname' => $user->nom . ' ' . $user->prenoms,
                     'nom' => $user->nom,
@@ -89,21 +89,20 @@ class UserController extends Controller
                     'telephone' => $user->telephone,
                     'sexe' => $user->sexe,
                     'lib_sexe' => $user->sexe == "M" ? "Homme" : "Femme",
-                    'image' => $user->image ? env('IMAGE_PATH_USERS').$user->image : null,
-            
+                    'image' => $user->image ? env('IMAGE_PATH_USERS') . $user->image : null,
+
                     'statut' => $user->isActive,
                     'lib_active' => $lib_active,
-                    'profil_id'=>$user->profil_id,
-                   'profile_name' => $user->profil_id !=null ?  Profil::find($user->profil_id)->libelle :null,
-
+                    'profil_id' => $user->profil_id,
+                    'profile_name' => $user->profil_id != null ? Profil::find($user->profil_id)->libelle : null,
 
                     // Add more properties if needed
-                ]; 
+                ];
             });
-         
+
             return response()->json([
                 'data' => $mappedUsers,
-            ]); 
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -113,7 +112,7 @@ class UserController extends Controller
 
         }
     }
-     /**
+    /**
      * @OA\Get(
      *     path="/clients",
      *     tags={"Clients"},
@@ -122,7 +121,7 @@ class UserController extends Controller
      *      @OA\Response(response=200,description="succès"),
      *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
      *      @OA\Response(response=404, description="Ressource introuvable"),
-     *       security={{"sanctum":{}}}  
+     *       security={{"sanctum":{}}}
      * ),
      */
     public function clients()
@@ -131,7 +130,7 @@ class UserController extends Controller
             $users = DB::table('users')
                 ->join('profils', 'users.profil_id', '=', 'profils.id')
                 ->whereIn('profils.libelle', ['Client'])
-                ->where('users.deleted_at','=',null)
+                ->where('users.deleted_at', '=', null)
                 ->select('users.*')
                 ->get();
             $mappedUsers = $users->map(function ($user) {
@@ -147,13 +146,13 @@ class UserController extends Controller
                     'adresse' => $user->adresse,
                     'email' => $user->email,
                     'telephone' => $user->telephone,
-                     'sexe' => $user->sexe,
+                    'sexe' => $user->sexe,
                     'lib_sexe' => $user->sexe == "M" ? "Homme" : "Femme",
-                    'image' => $user->image ? env('IMAGE_PATH_USERS').$user->image : null,
+                    'image' => $user->image ? env('IMAGE_PATH_USERS') . $user->image : null,
                     'statut' => $user->isActive,
                     'lib_active' => $lib_active,
-                    'profil_id'=>$user->profil_id,
-                    'profile_name' => $user->profil_id !=null ?  Profil::find($user->profil_id)->libelle :null,
+                    'profil_id' => $user->profil_id,
+                    'profile_name' => $user->profil_id != null ? Profil::find($user->profil_id)->libelle : null,
 
                     // Add more properties if needed
                 ];
@@ -172,9 +171,9 @@ class UserController extends Controller
         }
     }
     /**
-     * Liste des fournisseurs 
+     * Liste des fournisseurs
      */
-      /**
+    /**
      * @OA\Get(
      *     path="/fournisseurs",
      *     tags={"Fournisseurs"},
@@ -183,7 +182,7 @@ class UserController extends Controller
      *      @OA\Response(response=200,description="succès"),
      *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
      *      @OA\Response(response=404, description="Ressource introuvable"),
-     *       security={{"sanctum":{}}}  
+     *       security={{"sanctum":{}}}
      * ),
      */
     public function fournisseurs()
@@ -192,7 +191,7 @@ class UserController extends Controller
             $users = DB::table('users')
                 ->join('profils', 'users.profil_id', '=', 'profils.id')
                 ->whereIn('profils.libelle', ['Fournisseur'])
-                ->where('users.deleted_at','=',null)
+                ->where('users.deleted_at', '=', null)
                 ->select('users.*')
                 ->get();
             $mappedUsers = $users->map(function ($user) {
@@ -208,13 +207,13 @@ class UserController extends Controller
                     'adresse' => $user->adresse,
                     'email' => $user->email,
                     'telephone' => $user->telephone,
-                     'sexe' => $user->sexe,
+                    'sexe' => $user->sexe,
                     'lib_sexe' => $user->sexe == "M" ? "Homme" : "Femme",
-                    'image' => $user->image ? env('IMAGE_PATH_USERS').$user->image : null,
+                    'image' => $user->image ? env('IMAGE_PATH_USERS') . $user->image : null,
                     'statut' => $user->isActive,
                     'lib_active' => $lib_active,
-                    'profil_id'=>$user->profil_id,
-                    'profile_name' => $user->profil_id !=null ?  Profil::find($user->profil_id)->libelle :null,
+                    'profil_id' => $user->profil_id,
+                    'profile_name' => $user->profil_id != null ? Profil::find($user->profil_id)->libelle : null,
                     // Add more properties if needed
                 ];
             });
@@ -233,14 +232,88 @@ class UserController extends Controller
     }
 
     /**
+     * @OA\Get (
+     *     path="/fournisseurs/{id}/produits",
+     *     tags={"Fournisseurs"},
+     *     summary="Affiche le détail des produits du fournisseur",
+     *     description="Retourne les détails des produits du fournisseur",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         in="path",
+     *         name="id",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="success",
+     *     )
+     * )
+     */
+    public function fourndt($id)
+    {
+        // Récupération des détails des produits avec les jointures et regroupement des catégories
+
+        $produits = DB::table('produits')
+            ->select(
+                'produits.id',
+                'produits.libelle',
+                'produits.code',
+                'produits.image',
+                'produits.buying_price',
+                'produits.selling_price',
+                'produits.fournisseur_id',
+                'produits.quantite',
+                'categories.libelle as category_name'
+            )
+            ->leftJoin('categorie_produit', 'produits.id', '=', 'categorie_produit.produit_id')
+            ->leftJoin('categories', 'categorie_produit.categorie_id', '=', 'categories.id')
+            ->whereNull('produits.deleted_at') // Add this line to filter out soft-deleted records
+            ->where('produits.fournisseur_id', $id)
+            ->get();
+
+        // Map each products
+        $mappedProduits = $produits->groupBy('id')->map(function ($produitGroup) {
+            $firstProduit = $produitGroup->first();
+
+            $user = User::find($firstProduit->fournisseur_id);
+            return [
+                'id' => $firstProduit->id,
+                'libelle' => $firstProduit->libelle,
+                'code' => $firstProduit->code,
+                'fournisseur_id' => $user ? $user->id : null,
+                'fournisseur' => $user ? $user->nom . ' ' . $user->prenoms : "NEANT",
+                'categories' => $produitGroup->pluck('category_name')->all(),
+                'image' => $firstProduit->image ? env('IMAGE_PATH_PRODUITS') . $firstProduit->image : null,
+                'buying_price' =>$firstProduit->buying_price,
+                'selling_price' => $firstProduit->selling_price,
+                'quantite' => $firstProduit->quantite,
+            ];
+        });
+
+        // Comptage du nombre de produits pour le fournisseur spécifié
+        $qte_product = DB::table('produits')
+            ->where('fournisseur_id', $id)
+            ->count();
+
+        // Préparation des données de réponse
+        $donnees = [
+            "donnees" => $mappedProduits->values()->all(),
+            "nombre" => $qte_product,
+        ];
+
+        return $this->sendResponse(true, "détails des produits fournisseurs", $donnees);
+    }
+
+    /**
      * Display the specified resource.
      */
-      /**
+    /**
      * @OA\Get(
      *     path="/users/{id}",
      *     tags={"Utilisateurs"},
-     *      summary="Récupération de la liste des utilisateurs",
-     *      description="Retourne toute la liste des utilisateurs",
+     *      summary="Récupération du détail",
+     *      description="Retourne un détail",
      *      @OA\Parameter(
      *         in="path",
      *         name="id",
@@ -250,7 +323,7 @@ class UserController extends Controller
      *      @OA\Response(response=200,description="succès"),
      *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
      *      @OA\Response(response=404, description="Ressource introuvable"),
-     *       security={{"sanctum":{}}}  
+     *       security={{"sanctum":{}}}
      * ),
      */
     public function show(int $id)
@@ -258,7 +331,12 @@ class UserController extends Controller
         try {
 
             $user = User::join('profils', 'profils.id', '=', 'users.profil_id')
-                ->select('users.*', 'profils.id as profil_id', 'profils.libelle as profil_lib', 'profils.description as profil_description')
+                ->select(
+                    'users.*', 'profils.id as profil_id', 'profils.libelle as profil_lib', 'profils.description as profil_description',
+                    DB::raw('CASE WHEN users.sexe = "M" THEN "Homme" ELSE "Femme" END as sexe_label'),
+                    DB::raw('CASE WHEN users.image IS NOT NULL THEN CONCAT("' . env('IMAGE_PATH_USERS') . '", users.image) ELSE NULL END as image_url'),
+                    DB::raw('CASE WHEN users.isActive = 1 THEN "Activé" ELSE "Désactivé" END as lib_active')
+                )
                 ->where('users.id', $id)
                 ->where('profils.statut', 1)
                 ->get();

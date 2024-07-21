@@ -330,6 +330,37 @@
                 ]
             }
         },
+        "/printOrder/{id}": {
+            "get": {
+                "tags": [
+                    "Commandes"
+                ],
+                "summary": "Lien de l'imprimer du ticket | id=identifiant de la commande",
+                "description": "Retourne le lien de l'imprimer",
+                "operationId": "74ce734b20d85ff9d0e2b490e4019a30",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "succès"
+                    },
+                    "401": {
+                        "description": "Token expiré | Token invalide | Token absent "
+                    },
+                    "404": {
+                        "description": "Ressource introuvable"
+                    }
+                }
+            }
+        },
         "/clients": {
             "get": {
                 "tags": [
@@ -382,13 +413,43 @@
                 ]
             }
         },
+        "/fournisseurs/{id}/produits": {
+            "get": {
+                "tags": [
+                    "Fournisseurs"
+                ],
+                "summary": "Affiche le détail des produits du fournisseur",
+                "description": "Retourne les détails des produits du fournisseur",
+                "operationId": "403cd37c23821eea9aa9dfc12a491ff8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/users/{id}": {
             "get": {
                 "tags": [
                     "Utilisateurs"
                 ],
-                "summary": "Récupération de la liste des utilisateurs",
-                "description": "Retourne toute la liste des utilisateurs",
+                "summary": "Récupération du détail",
+                "description": "Retourne un détail",
                 "operationId": "4912d83c790d90d55874bbb5347b274f",
                 "parameters": [
                     {

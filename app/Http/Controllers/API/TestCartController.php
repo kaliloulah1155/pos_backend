@@ -287,7 +287,24 @@ public function decreaseQuantity($productId)
     }
     
     //Generation du pdf à imprimer
-    
+      
+      /**
+     * @OA\Get(
+     *     path="/printOrder/{id}",
+     *     tags={"Commandes"},
+     *      summary="Lien de l'imprimer du ticket | id=identifiant de la commande",
+     *      description="Retourne le lien de l'imprimer",
+     *      @OA\Parameter(
+     *         in="path",
+     *         name="id",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *      @OA\Response(response=200,description="succès"),
+     *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
+     *      @OA\Response(response=404, description="Ressource introuvable")  
+     * ),
+     */
     public function pdfOrder($id){
         
         try {

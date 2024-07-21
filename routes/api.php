@@ -29,7 +29,7 @@ Route::group(['prefix' => '/v1'], function () {
     
      Route::get('printOrder/{id}', [TestCartController::class, 'pdfOrder']); //imprimer de la commande
 
-     //LISTE DES COMMANDES
+     //LISTE DES COMMANDES   
      Route::get('orders', [OrderController::class, 'index']);
      Route::get('orders/{id}', [OrderController::class, 'show']);
      Route::get('orders/{id}/items', [OrderController::class, 'items']);
@@ -46,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('employes', [UserController::class, 'employes']);
         Route::get('clients', [UserController::class, 'clients']);
         Route::get('fournisseurs', [UserController::class, 'fournisseurs']);
+        Route::get('fournisseurs/{id}/produits', [UserController::class, 'fourndt']);
         Route::post('users/{id}', [UserController::class, 'update']);
         Route::delete('users/{id}', [UserController::class, 'destroy']);
         Route::delete('users/dl/{id}', [UserController::class, 'delete']);
