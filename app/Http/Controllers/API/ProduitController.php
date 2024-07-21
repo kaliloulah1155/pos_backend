@@ -47,19 +47,19 @@ class ProduitController extends Controller
             $firstProduit = $produitGroup->first();
            
             $user = User::find($firstProduit->fournisseur_id);
-            return [
-                'id' => $firstProduit->id,
-                'libelle' => $firstProduit->libelle,
-                'code' => $firstProduit->code,
-                'fournisseur_id' => $user ? $user->id: null,
-                'fournisseur' => $user ? $user->nom.' '.$user->prenoms : "NEANT",
-                'categories' => $produitGroup->pluck('category_name')->all(),
-                'image' => $firstProduit->image ? env('IMAGE_PATH_PRODUITS').$firstProduit->image : null,
-                'buying_price' => (new AmountFormatService)->formatAmount($firstProduit->buying_price) . ' F CFA',
-                'selling_price' => (new AmountFormatService)->formatAmount($firstProduit->selling_price) . ' F CFA',
-                'quantite' => $firstProduit->quantite,
-            ];
-        });
+                return [
+                    'id' => $firstProduit->id,
+                    'libelle' => $firstProduit->libelle,
+                    'code' => $firstProduit->code,
+                    'fournisseur_id' => $user ? $user->id: null,
+                    'fournisseur' => $user ? $user->nom.' '.$user->prenoms : "NEANT",
+                    'categories' => $produitGroup->pluck('category_name')->all(),
+                    'image' => $firstProduit->image ? env('IMAGE_PATH_PRODUITS').$firstProduit->image : null,
+                    'buying_price' => (new AmountFormatService)->formatAmount($firstProduit->buying_price) . ' F CFA',
+                    'selling_price' => (new AmountFormatService)->formatAmount($firstProduit->selling_price) . ' F CFA',
+                    'quantite' => $firstProduit->quantite,
+                ];
+           });
             // Return the paginated data with additional information
             return response()->json([
                 'data' => $mappedProduits->values()->all(),
