@@ -103,52 +103,106 @@ class OrderController extends Controller
             ->where('ps.created_at','>=',Carbon::today()->startOfDay())
             ->where('ps.created_at', '<=', Carbon::today()->endOfDay());
             $summaryToday = $summaryQueryToday->first();
-    
         $donnees=[
-            'success' => true,
-            'message' => 'Liste des commandes',
-            'data' => [
                 'orders' => $orders,
                 'summary' => $summary,
                 'summaryToday'=>$summaryToday
-            ],
         ];
         
         return $this->sendResponse(true, "Liste des commandes", $donnees);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+   /**
+     * @OA\Get (
+     *     path="/orders/{id}",
+     *     tags={"Commandes"},
+     *     summary="Affiche les détails d'une commande",
+     *     description="Retourne tous les détails d'une commande",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         in="path",
+     *         name="id",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="success",
+     *     )
+     * )
      */
     public function show($id)
     {
-        //
+         // Construction de la requête principale pour les commandes
+         $ordersQuery = DB::table('users as clt')
+         ->select(
+             'ps.created_at',
+             'ps.id as order_id', 'clt.id as client_id', 'clt.nom as client_nom', 'clt.prenoms as client_prenoms',
+             'cre.id as createur_id', 'cre.nom as createur_nom', 'cre.prenoms as createur_prenoms',
+             'cat.id as methodpaid_id', 'cat.libelle as methodpaid',
+             'ps.transaction_id', 'ps.tva', 'ps.remise', 'ps.espece', 'ps.monnaie', 'ps.qte_total as order_amount', 'ps.print_status as printed', 'ps.status'
+         )
+         ->leftJoin('pos as ps', 'clt.id', '=', 'ps.client_id')
+         ->leftJoin('users as cre', 'ps.created_user', '=', 'cre.id')
+         ->leftJoin('categories as cat', 'ps.paid_method_id', '=', 'cat.id')
+         ->whereNotNull('ps.id');
+         $orders = $ordersQuery->where('ps.id','=',$id)->get();
+
+
+
+
+         return $this->sendResponse(true, "détails de la commande", $orders);
     }
 
+
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @OA\Get (
+     *     path="/orders/{id}/items",
+     *     tags={"Commandes"},
+     *     summary="Affiche les détails du panier d'une commande",
+     *     description="Retourne tous les détails d'un panier d'une commande",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         in="path",
+     *         name="id",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="success",
+     *     )
+     * )
      */
-    public function update(Request $request, $id)
+    public function items($id)
     {
-        //
+         // Construction de la requête principale pour les commandes
+         $ordersQuery = DB::table('pos_cart_items as item')
+         ->select(
+             'ps.created_at',
+             'ps.id as order_id',
+             'pod.libelle as produit','item.qte','item.price','item.price_by_qte'
+         )
+         ->leftJoin('pos as ps', 'item.pos_id', '=', 'ps.id')
+         ->leftJoin('produits as pod', 'item.item_id', '=', 'pod.id')
+         ->whereNotNull('ps.id');
+         $paniers = $ordersQuery->where('ps.id','=',$id)->get();
+
+         $summaryItems = DB::table('pos_cart_items as item')
+         ->select(
+             DB::raw('COUNT(item.id) as number_item')
+         )
+         ->whereNotNull('item.id')
+         ->where('item.pos_id','=',$id);
+         $summaryQte = $summaryItems->first();
+
+         
+         $donnees=[
+            "nbre"=>$summaryQte,
+            "panier"=>$paniers,
+         ];
+
+         return $this->sendResponse(true, "détails du panier", $donnees);
     }
 
     /**

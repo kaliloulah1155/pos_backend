@@ -270,6 +270,66 @@
                 ]
             }
         },
+        "/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Commandes"
+                ],
+                "summary": "Affiche les détails d'une commande",
+                "description": "Retourne tous les détails d'une commande",
+                "operationId": "afa7dfe6084274eb77b0dc1215401b30",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/orders/{id}/items": {
+            "get": {
+                "tags": [
+                    "Commandes"
+                ],
+                "summary": "Affiche les détails du panier d'une commande",
+                "description": "Retourne tous les détails d'un panier d'une commande",
+                "operationId": "4f8538d035044621a6cb32274482c560",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/clients": {
             "get": {
                 "tags": [

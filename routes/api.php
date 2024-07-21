@@ -31,6 +31,8 @@ Route::group(['prefix' => '/v1'], function () {
 
      //LISTE DES COMMANDES
      Route::get('orders', [OrderController::class, 'index']);
+     Route::get('orders/{id}', [OrderController::class, 'show']);
+     Route::get('orders/{id}/items', [OrderController::class, 'items']);
      //FIN::COMMANDES
 });
 
