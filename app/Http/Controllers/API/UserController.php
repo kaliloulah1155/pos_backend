@@ -69,7 +69,7 @@ class UserController extends Controller
 
             $users = DB::table('users')
                 ->join('profils', 'users.profil_id', '=', 'profils.id')
-                ->whereNotIn('profils.libelle', ['Client', 'Fournisseur'])
+                ->whereNotIn('profils.libelle', ['Client','Fournisseur','Super admin'])
                 ->where('users.deleted_at', '=', null)
                 ->select('users.*')
                 ->get();

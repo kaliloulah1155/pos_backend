@@ -75,7 +75,7 @@ class ProfilController extends Controller
     {
         try {
             $profils = DB::table('profils')
-                ->whereNotIn('libelle', ['Client', 'Fournisseur'])
+                ->whereNotIn('libelle', ['Client','Fournisseur','Super admin'])
                 ->select('id','libelle')
                 ->get();
 
