@@ -416,6 +416,7 @@ class AuthController extends Controller
                 $user['image'] = $user->image == null ? $user->image : env('IMAGE_PATH_USERS').$user->image;
 
                 $user['profile_name'] = Profil::where('id', $user->profil_id)->value('libelle');
+                $user['profile_code'] = Profil::where('id', $user->profil_id)->value('code');
 
                 $user['token'] = $request->bearerToken();
                 $user['menus'] =  $result;
