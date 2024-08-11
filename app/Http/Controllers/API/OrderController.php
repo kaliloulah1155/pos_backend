@@ -45,7 +45,9 @@ class OrderController extends Controller
  */
 
     public function index(Request $request)
-    { $startDate = $request->query('start_date');
+    { 
+        
+        $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
     
         // Construction de la requête principale pour les commandes
@@ -78,7 +80,7 @@ class OrderController extends Controller
         // Calculer le cumul global en somme (ps.qte_total) et le nombre de transactions
         $summaryQuery = DB::table('pos as ps')
             ->select(
-                DB::raw('SUM(ps.qte_total) as total_sum'),
+                DB::raw('COALESCE(CAST(SUM(ps.qte_total) AS INTEGER), 0) as total_sum'),
                 DB::raw('COUNT(ps.id) as total_transactions')
             )
             ->whereNotNull('ps.id');
@@ -92,11 +94,11 @@ class OrderController extends Controller
             $summaryQuery->where('ps.created_at', '<=', $endDate);
         }
         $summary = $summaryQuery->first();
-
+        
         // Calculer le cumul global en somme (ps.qte_total) et le nombre de transactions d'aujourd'hui
         $summaryQueryToday = DB::table('pos as ps')
             ->select(
-                DB::raw('SUM(ps.qte_total) as total_sum'),
+                DB::raw('COALESCE(CAST(SUM(ps.qte_total) AS INTEGER), 0) as total_sum'),
                 DB::raw('COUNT(ps.id) as total_transactions')
             )
             ->whereNotNull('ps.id')
@@ -146,9 +148,9 @@ class OrderController extends Controller
          ->leftJoin('users as cre', 'ps.created_user', '=', 'cre.id')
          ->leftJoin('categories as cat', 'ps.paid_method_id', '=', 'cat.id')
          ->whereNotNull('ps.id');
-         $orders = $ordersQuery->where('ps.id','=',$id)->get();
+         $orders["detail"] = $ordersQuery->where('ps.id','=',$id)->get();
 
-
+         $orders["items"]= $this->items($id);
 
 
          return $this->sendResponse(true, "détails de la commande", $orders);
@@ -197,10 +199,9 @@ class OrderController extends Controller
          $summaryQte = $summaryItems->first();
 
          
-         $donnees=[
-            "nbre"=>$summaryQte,
-            "panier"=>$paniers,
-         ];
+         $donnees["nbre_item"]=$summaryQte;
+         $donnees["panier"]=$paniers;
+        
 
          return $this->sendResponse(true, "détails du panier", $donnees);
     }

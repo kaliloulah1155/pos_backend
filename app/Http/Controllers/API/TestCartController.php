@@ -313,7 +313,7 @@ public function decreaseQuantity($productId)
             $resPosItems = DB::select("CALL GetPosItem(?)",[$id]);
             
             
-            $pdf = PDF::loadView('pdf.print_order', ['resPos'=>$resPos , 'resPosItems'=>$resPosItems])->setPaper([0, 0, 200, 400], 'portrait');
+            $pdf = PDF::loadView('pdf.print_order', ['resPos'=>$resPos , 'resPosItems'=>$resPosItems])->setPaper([0, 0, 300, 400], 'portrait');
             $pdf->getDomPDF()->set_option("enable_php", true);
            return $pdf->stream('print_order'.date('Y-m-d_H-i-s').'.pdf');
            

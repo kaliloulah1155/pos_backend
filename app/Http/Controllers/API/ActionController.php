@@ -81,12 +81,12 @@ class ActionController extends Controller
     {
         try {   
             
-            $r_positions = DB::select('CALL sp_action_max()');
+           
             $action = Action::create([
                 'libelle' => $request->libelle,
                 'code' => $request->code,
                 'icon' => $request->icon,
-                'position' => intval($r_positions[0]->positions)+1,
+                'position' => $request->position,
                 'statut' => $request->statut,
                 'created_user' => Auth::id(),
             ]);

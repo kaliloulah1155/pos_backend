@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\DashController;
 use App\Http\Controllers\API\MenuController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\OrderController;
@@ -125,6 +126,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('addOrder', [TestCartController::class, 'addOrder']);
         Route::get('pos_categories', [ProduitController::class, 'pos_categorie']);   //liste des categories du pos
         Route::get('pos_produit_by_categorie/{categoryId}', [ProduitController::class, 'pos_produit_by_categorie']);   //liste des categories du pos
+
+
+        //Dashboard
+        Route::get('stats', [DashController::class, 'stats']); 
+
        
     
 
