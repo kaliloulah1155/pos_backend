@@ -13,6 +13,7 @@ use App\Http\Controllers\API\ProduitController;
 use App\Http\Controllers\API\SalaireController;
 use App\Http\Controllers\API\TestCartController;
 use App\Http\Controllers\API\CategorieController;
+use App\Http\Controllers\API\EntrepriseController;
 use App\Http\Controllers\API\PermissionController;
          
 Route::group(['prefix' => '/v1'], function () {
@@ -130,6 +131,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         //Dashboard
         Route::get('stats', [DashController::class, 'stats']); 
+
+        //Entreprise
+        Route::post('entreprise', [EntrepriseController::class, 'store']);
+        Route::get('entreprise/{id}', [EntrepriseController::class, 'show']);
+        Route::post('licence', [EntrepriseController::class, 'store_licence']);
 
        
     

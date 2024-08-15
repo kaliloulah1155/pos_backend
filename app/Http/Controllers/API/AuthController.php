@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\API;
 
+use Carbon\Carbon;
 use App\Models\Menu;
 use App\Models\User;
 use App\Models\Profil;
+use App\Models\Licence;
+use App\Models\Entreprise;
 use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Models\PasswordReset;
@@ -138,6 +141,40 @@ class AuthController extends Controller
                     'message' => "Votre mot de passe est incorrect. Veuillez le vérifier.",
                 ]);
             }
+
+            //Controle de la licence
+            $registered = Licence::where("code", "=", env('REGISTRATION_KEY'))->first();
+
+            if(!$registered){
+                return response()->json([
+                    'error' => true,
+                    'message' => "Vous n'avez pas de licence.",
+                ]);
+            }
+            $endDate = Carbon::parse($registered->dt_fin); // Convertit la date de fin en instance Carbon
+            $today = Carbon::now();
+
+            $etat_licence=0;
+            if ($today->greaterThan($endDate)) {
+                $etat_licence= 1; // licence expiré
+            }else{
+                $etat_licence=2; // licence valide
+            }  
+
+            if($etat_licence==0){
+                return response()->json([
+                    'error' => true,
+                    'message' => "Vous n'avez pas de licence.",
+                ]);
+            }
+            if($etat_licence==1){
+                return response()->json([
+                    'error' => true,
+                    'message' => "Votre licence a expiré le ".$endDate->format('d/m/Y'),
+                ]);
+            }
+
+
             $token = $user->createToken('user_token')->plainTextToken;
 
             return response()->json(['token' => $token], 200);
@@ -333,6 +370,11 @@ class AuthController extends Controller
             $user = $request->user();
             
             $id=$user['profil_id'];
+
+            $entreprise = Entreprise::where("license", "=", env('REGISTRATION_KEY'))->first();
+            if ($entreprise) {
+                $entreprise->image = $entreprise->image ? env('IMAGE_PATH_ENTREPRISE') . $entreprise->image : null;
+            }
             
             //GESTION DES MENUS
             
@@ -417,6 +459,9 @@ class AuthController extends Controller
 
                 $user['profile_name'] = Profil::where('id', $user->profil_id)->value('libelle');
                 $user['profile_code'] = Profil::where('id', $user->profil_id)->value('code');
+
+                unset($entreprise->license); // Masquer la licence 
+                $user["entreprise"]= $entreprise;
 
                 $user['token'] = $request->bearerToken();
                 $user['menus'] =  $result;

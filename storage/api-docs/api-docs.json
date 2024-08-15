@@ -270,6 +270,150 @@
                 ]
             }
         },
+        "/entreprise": {
+            "post": {
+                "tags": [
+                    "Entreprise"
+                ],
+                "summary": "Formulaire de creation d'une entreprise",
+                "operationId": "5e7c4a28f43101f002b91db44196f789",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "libelle": {
+                                        "description": "Saisir la raison sociale.",
+                                        "type": "string"
+                                    },
+                                    "phone_1": {
+                                        "description": "N° telephone 1.",
+                                        "type": "string"
+                                    },
+                                    "phone_2": {
+                                        "description": "N° telephone 2.",
+                                        "type": "string"
+                                    },
+                                    "phone_fixe": {
+                                        "description": "N° telephone fixe.",
+                                        "type": "string"
+                                    },
+                                    "localisation": {
+                                        "description": "Localisation.",
+                                        "type": "string"
+                                    },
+                                    "license": {
+                                        "description": "Clé d'enregistrement(voir admin).",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "E-mail de l'entreprise.",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "web": {
+                                        "description": "Site web de l'entreprise.",
+                                        "type": "string"
+                                    },
+                                    "image": {
+                                        "description": "Fichier image correspondant au logo de l'entreprise.",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Succès"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/licence": {
+            "post": {
+                "tags": [
+                    "Entreprise"
+                ],
+                "summary": "Formulaire de creation d'une licence",
+                "operationId": "f26b879537adc33c75b845a8653d8148",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "code": {
+                                        "description": "Saisir la clé d'enregistrement.",
+                                        "type": "string"
+                                    },
+                                    "dt_debut": {
+                                        "description": "Date de debut.",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-01"
+                                    },
+                                    "dt_fin": {
+                                        "description": "Date de fin.",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Succès"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/entreprise/{id}": {
+            "get": {
+                "tags": [
+                    "Entreprise"
+                ],
+                "summary": "Affiche le détail de l'entreprise",
+                "description": "Retourne les détails de l'entreprise",
+                "operationId": "e85e6043c861e7eb4553cb2b1ee1ca49",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/orders": {
             "get": {
                 "tags": [
@@ -621,6 +765,10 @@
         {
             "name": "Dashboard",
             "description": "Dashboard"
+        },
+        {
+            "name": "Entreprise",
+            "description": "Entreprise"
         },
         {
             "name": "Commandes",

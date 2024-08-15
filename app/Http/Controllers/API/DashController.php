@@ -67,8 +67,12 @@ class DashController extends Controller
         // Nombre total de produits
         $produits["nombre"] = Produit::count();
 
+         // Produits en rupture de stock
+         $produits["stock"] = Produit::where('quantite', '>', 0)->count();
         // Produits en rupture de stock
         $produits["rupture"] = Produit::where('quantite', '=', 0)->count();
+
+
 
         // Produits en dessous du seuil
         $produits["seuil"] = Produit::where('quantite', '=', env('SEUIL_PRODUIT'))->count();
