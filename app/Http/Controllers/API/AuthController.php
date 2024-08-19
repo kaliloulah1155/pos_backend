@@ -374,7 +374,7 @@ class AuthController extends Controller
             $entreprise = Entreprise::where("license", "=", env('REGISTRATION_KEY'))->first();
             if ($entreprise) {
                 $entreprise->image = $entreprise->image ? env('IMAGE_PATH_ENTREPRISE') . $entreprise->image : null;
-            }
+            }   
             
             //GESTION DES MENUS
             

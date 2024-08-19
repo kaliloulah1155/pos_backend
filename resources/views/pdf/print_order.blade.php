@@ -24,11 +24,11 @@
             text-align: left;
             font-size:0.5rem;
         }
-        
+
         .coord .col1{
              font-weight: normal;
         }
-        
+
         .finance {
             margin-bottom: 2px;
             text-align: left;
@@ -43,7 +43,7 @@
             text-align: left;
             font-size:0.5rem;
         }
-        
+
         .items {
             margin-bottom: 2px;
             text-align: left;
@@ -58,7 +58,7 @@
             text-align: left;
             font-size:0.5rem;
         }
-        
+
 
         @media print {
           table {
@@ -89,14 +89,22 @@
         }
 
     </style>
-</head>    
+</head>
 <body>
          <div class="receipt">
                 <div class="header">
-                    <h1>KEWOUSTORE</h1>
-                    <p>YOPOUGON KM17</p>
-                    <p>Tel: 01 73 832 778 / 01 02 669 620</p>
-                    <p>Le {{ (new \DateTime($resPos[0]->created_at))->format('d/m/Y') }} à {{ (new \DateTime($resPos[0]->created_at))->format('H:i:s') }}</p>
+                    @if($resEnterp->image)
+                         @if($mimeType && $base64Image)
+                            <img src="data:{{ $mimeType }};base64,{{ $base64Image }}" alt="Logo de l'entreprise" style="width: 30px; height: auto; margin-bottom:1px;">
+                        @endif
+                    @endif
+                    <h1>{{ strtoupper($resEnterp->libelle)}}</h1>
+                    <p>{{ $resEnterp->localisation }}</p>
+                    <p>Tel: {{ $resEnterp->phone_1 }} / {{ $resEnterp->phone_2 }}</p>
+                    @if($resEnterp->phone_fixe)
+                      <p>Tel. Fixe: {{ $resEnterp->phone_fixe }}</p>
+                    @endif
+                    <p>Date d'édition {{ (new \DateTime($resPos[0]->created_at))->format('d/m/Y') }} à {{ (new \DateTime($resPos[0]->created_at))->format('H:i:s') }}</p>
                 </div>
          </div>
          <div class="coord">
@@ -164,7 +172,7 @@
                         <td style="width: 25%" >TOTAL(CFA)</td>
                         <td style="width: 25%;background-color: #000000;color:white;font-weight: bold" class="col1">{{ number_format($resPos[0]->qte_total, 0, ',', ' ') }}</td>
                     </tr>
-                    
+
                  </tbody>
              </table>
         </div>
@@ -173,6 +181,11 @@
                 <div class="header">
                     <h1>Vérifiez votre monnaie avant de sortir.</h1>
                     <p>Merci pour votre fidelité</p>
+                    <p>
+                        @if($resEnterp->web)
+                        Site web : {{$resEnterp->web}}
+                        @endif
+                    </p>
                 </div>
          </div>
 </body>
