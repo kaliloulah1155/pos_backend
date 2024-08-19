@@ -97,7 +97,7 @@ class EntrepriseController extends Controller
           
 
             $entreprise= Entreprise::updateOrCreate(
-                ['libelle' => $request->libelle],
+                ['id' => $request->id],
                 [
                     "libelle"=> $request->libelle,
                     "phone_1"=>$request->phone_1,

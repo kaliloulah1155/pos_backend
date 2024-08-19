@@ -142,10 +142,10 @@
                  <tbody>
                      @foreach($resPosItems as $psIt)
                         <tr>
-                            <td>{{ ucfirst($psIt->produit) }}</td>
-                            <td>{{ number_format($psIt->price, 0, ',', ' ') }}</td>
-                            <td>{{ number_format($psIt->qte, 0, ',', ' ') }}</td>
-                            <td>{{ number_format($psIt->price_by_qte, 0, ',', ' ') }}</td>
+                            <td style="width: 40%">{{ ucfirst($psIt->produit) }}</td>
+                            <td style="width: 20%">{{ number_format($psIt->price, 0, ',', ' ') }}</td>
+                            <td style="width: 5%">{{ number_format($psIt->qte, 0, ',', ' ') }}</td>
+                            <td style="width: 20%">{{ number_format($psIt->price_by_qte, 0, ',', ' ') }}</td>
                         </tr>
                     @endforeach
                  </tbody>
