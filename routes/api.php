@@ -1,5 +1,6 @@
 <?php
 
+use Fruitcake\Cors\HandleCors;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\DashController;
@@ -22,12 +23,15 @@ Route::group(['prefix' => '/v1'], function () {
     Route::get('permissions/menu/{id}', [PermissionController::class, 'menu_profil']); // passage de l'id profil
 
     //Password reset
-    Route::post('forgot', [AuthController::class, 'forgot']);
+    Route::post('pwd',[UserController::class,'pwd']);
     Route::post('resetpwd', [AuthController::class, 'resetpwd']);
+    Route::post('checkToken', [AuthController::class, 'checkOtp']);
     
     Route::get('test',function(){
         return response()->json(['message' => 'API test successful']);
     });
+
+   
     
      Route::get('printOrder/{id}', [TestCartController::class, 'pdfOrder']); //imprimer de la commande
 

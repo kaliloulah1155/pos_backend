@@ -55,39 +55,6 @@
                 }
             }
         },
-        "/forgot": {
-            "post": {
-                "tags": [
-                    "Authentifications"
-                ],
-                "summary": "Mot de passe oublié",
-                "operationId": "97040f9bd5808b2693ccf9116780750e",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "description": "E-mail",
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                }
-            }
-        },
         "/resetpwd": {
             "post": {
                 "tags": [
@@ -542,6 +509,39 @@
                     },
                     "404": {
                         "description": "Ressource introuvable"
+                    }
+                }
+            }
+        },
+        "/pwd": {
+            "post": {
+                "tags": [
+                    "Authentifications"
+                ],
+                "summary": "Mot de passe oublié",
+                "operationId": "7fc1cd1867151111bc2bdebaed61cc33",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "E-mail",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
                     }
                 }
             }

@@ -200,85 +200,37 @@ class AuthController extends Controller
             ]);
         }
     }
+ 
+    
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id): RedirectResponse
-    {
-        //
-    }
+    public function checkOtp(){
+        try{
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id): RedirectResponse
-    {
-        //
-    }
+            $resetRequest = PasswordReset::where('token', request()->token)->first();
 
+            if (!$resetRequest) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Votre code est incorrect",
+                ]);
+            }
 
-     /**
-     *
-     * @OA\Post (
-     *     path="/forgot",
-     *     tags={"Authentifications"},
-     *     summary="Mot de passe oublié",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\MediaType(
-     *             mediaType="application/json",
-     *             @OA\Schema(
-     *                 required={"email"},
-     *                 @OA\Property(
-     *                     property="email",
-     *                     type="string",
-     *                      description="E-mail"
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Success"
-     *     )
-     * )
-     */
-    public function forgot(Request $request)
-    {
-
-        $user = ($query = User::query());
-
-        $user = $user->where($query->qualifyColumn('email'), $request->email)->first();
-
-        $resetPasswordToken = str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
-
-        if (!$userPassReset = PasswordReset::where('email', $user->email)->first()) {
-
-            PasswordReset::create([
-                'email' => $user->email,
-                'token' => $resetPasswordToken,
+            return response()->json([
+                'error' => false,
+                'otp' =>intval(request()->token),
             ]);
-        } else {
-            PasswordReset::where('email', $user->email)->update([
-                'email' => $user->email,
-                'token' => $resetPasswordToken,
+
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'message' => 'Something went wrong in AuthController.checkOtp',
             ]);
         }
-
-        //send notification
-        $user['resetPasswordToken'] = $resetPasswordToken;
-        $user->notify(
-
-            new PasswordResetNotification($user)
-        );
-       
-
-        return response()->json([
-            'message' => "Un code vous a été envoyé sur votre adresse email",
-        ]);
-
     }
+
+  
+   
 
 
 
@@ -323,7 +275,7 @@ class AuthController extends Controller
         if (!$resetRequest) {
             return response()->json([
                 'error' => true,
-                'message' => "Votre code est incorrecte",
+                'message' => "Votre code est incorrect",
             ]);
         }
 
