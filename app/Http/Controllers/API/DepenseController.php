@@ -55,7 +55,8 @@ class DepenseController extends Controller
             $depense = Depense::create([
                 'description' => $request->description,
                 'montant' => $request->montant ?? 0,
-                'date_depense' => (new DateTranformService )->transformToYYYYMMDD($request->date_depense) ??  date('Y-m-d'),
+                //'date_depense' => (new DateTranformService )->transformToYYYYMMDD($request->date_depense) ??  date('Y-m-d'),
+                'date_depense' =>$request->date_depense,
                 'created_user' => Auth::id(),
             ]);
             return response()->json($depense, 200);

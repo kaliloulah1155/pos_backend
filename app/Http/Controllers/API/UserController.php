@@ -2,21 +2,92 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\User\UpdateRequest;
-use App\Models\Profil;
-use App\Models\User;
-use App\Services\AmountFormatService;
-use App\Services\ImageService;
-use Carbon\Carbon;
 use DB;
+use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Profil;
+use App\Models\PasswordReset;
 use Illuminate\Http\Response;
+use App\Services\ImageService;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\User\UpdateRequest;
+use App\Notifications\PasswordResetNotification;
 
 class UserController extends Controller
 {
+
+
+       /**
+     *
+     * @OA\Post (
+     *     path="/pwd",
+     *     tags={"Authentifications"},
+     *     summary="Mot de passe oublié",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"email"},
+     *                 @OA\Property(
+     *                     property="email",
+     *                     type="string",
+     *                      description="E-mail"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success"
+     *     )
+     * )
+     */
+    public function pwd()
+    {
+        request()->email;
+
+        $user = User::where('email', request()->email)->first();
+        if (!$user) {
+            return response()->json([
+                'error'=>true,
+                'message' => "L'adresse e-mail indiquée n'existe pas",
+            ]);
+        }
+
+        $resetPasswordToken = str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+
+        if (!$userPassReset = PasswordReset::where('email', $user->email)->first()) {
+            PasswordReset::create([
+                'email' => $user->email,
+                'token' => $resetPasswordToken,
+            ]);
+        } else {
+
+            PasswordReset::where('email', $user->email)->update([
+                'email' => $user->email,
+                'token' => $resetPasswordToken,
+            ]);
+
+        }
+
+         //send notification
+         $user['resetPasswordToken'] = $resetPasswordToken;
+         $user->notify(
+ 
+             new PasswordResetNotification($user)
+         );
+
+         return response()->json([
+            'error'=>false,
+            'message' => "Un code vous a été envoyé à votre adresse email",
+        ]);
+
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -69,7 +140,7 @@ class UserController extends Controller
 
             $users = DB::table('users')
                 ->join('profils', 'users.profil_id', '=', 'profils.id')
-                ->whereNotIn('profils.libelle', ['Client','Fournisseur','Super admin'])
+                ->whereNotIn('profils.libelle', ['Client', 'Fournisseur', 'Super admin'])
                 ->where('users.deleted_at', '=', null)
                 ->select('users.*')
                 ->get();
@@ -285,7 +356,7 @@ class UserController extends Controller
                 'fournisseur' => $user ? $user->nom . ' ' . $user->prenoms : "NEANT",
                 'categories' => $produitGroup->pluck('category_name')->all(),
                 'image' => $firstProduit->image ? env('IMAGE_PATH_PRODUITS') . $firstProduit->image : null,
-                'buying_price' =>$firstProduit->buying_price,
+                'buying_price' => $firstProduit->buying_price,
                 'selling_price' => $firstProduit->selling_price,
                 'quantite' => $firstProduit->quantite,
             ];
