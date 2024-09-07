@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Notifications\PasswordResetNotification;
 use App\Http\Requests\ForgotPassword\ResetPasswordRequest;
@@ -27,8 +28,44 @@ use App\Http\Requests\ForgotPassword\ForgotPasswordRequest;
 class AuthController extends Controller
 {
 
-    public function register(RegisterRequest $request)
+    public function registered(Request $request)
     {
+        
+       // Définir les règles de validation
+    $rules = [
+        'nom' => 'required|string|max:255',
+        'prenoms' => 'required|string|max:255',
+        'telephone' => ['required', 'regex:/^\d{10}$/'],
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6|confirmed',
+        'profil_id' => 'required|integer',
+    ];
+   
+    // Définir les messages personnalisés
+    $messages = [
+        'nom.required' => 'Le champ nom est requis.',
+        'prenoms.required' => 'Le champ prénoms est requis.',
+        'telephone.required' => 'Le champ téléphone est requis.',
+        'telephone.regex' => 'Le format du numéro de téléphone est invalide. Il doit contenir exactement 10 chiffres.',
+        'email.unique' => 'Cette adresse email existe déjà.',
+        'email.required' => 'Le champ email est requis.',
+        'email.email' => 'Veuillez saisir une adresse email valide.',
+        'password.required' => 'Le champ mot de passe est requis.',
+        'password.confirmed' => 'Le mot de passe ne correspond pas à la confirmation.',
+        'profil_id.required' => 'Le champ profil est requis.',
+    ];
+
+    // Créer le validateur
+    $validator = Validator::make($request->all(), $rules, $messages);
+   
+    // Vérifier si la validation échoue
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Validation failed',
+            'errors' => $validator->errors(),
+        ], 422);  // 422 Unprocessable Entity
+    } 
         try {
             $user = User::create([
                 'nom' => $request->nom,

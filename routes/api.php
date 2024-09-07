@@ -18,7 +18,7 @@ use App\Http\Controllers\API\EntrepriseController;
 use App\Http\Controllers\API\PermissionController;
          
 Route::group(['prefix' => '/v1'], function () {
-    Route::post('register', [AuthController::class, 'register']);
+    Route::post('registered', [AuthController::class, 'registered']);
     Route::post('login', [AuthController::class, 'login']);
     Route::get('permissions/menu/{id}', [PermissionController::class, 'menu_profil']); // passage de l'id profil
 
