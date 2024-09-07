@@ -77,7 +77,7 @@ class DashController extends Controller
         // Produits en dessous du seuil
         $produits["seuil"] = Produit::where('quantite', '=', env('SEUIL_PRODUIT'))->count();
 
-        // Récupération des ventes filtrées par date
+        // Récupération de mes ventes filtrées par date
         $ordersQuery = DB::table('pos_cart_items as item')
             ->select(
                 'ps.created_at',
@@ -176,6 +176,7 @@ class DashController extends Controller
          $summaryOrders= DB::table('pos as ps')
             ->select(
                 DB::raw('COALESCE(CAST(SUM(ps.qte_total) AS INTEGER), 0) as total_sum'),
+                DB::raw('COALESCE(CAST(SUM(ps.remise) AS INTEGER), 0) as total_remise'),
                 DB::raw('COUNT(ps.id) as total_transactions')
             )
             ->whereBetween('ps.created_at', [$start_date, $end_date])

@@ -21,7 +21,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
  *     description="Lien en local"
  * )
  * @OA\Server(
- *     url="https://pos789456123.kewoustore.com/api/v1",
+ *     url="https://pos.kehogroupe-ci.com/api/v1",
  *     description="Lien de la recette"
  * )
  */
