@@ -11,7 +11,7 @@
             "description": "Lien en local"
         },
         {
-            "url": "https://pos789456123.kewoustore.com/api/v1",
+            "url": "https://pos.kehogroupe-ci.com/api/v1",
             "description": "Lien de la recette"
         }
     ],

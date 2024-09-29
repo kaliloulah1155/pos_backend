@@ -77,7 +77,7 @@ class UserController extends Controller
          //send notification
          $user['resetPasswordToken'] = $resetPasswordToken;
          $user->notify(
- 
+
              new PasswordResetNotification($user)
          );
 
@@ -544,10 +544,9 @@ class UserController extends Controller
 
             if (isset($request->password)) {
                 $this->validate($request, [
-                    'password' => 'min:8|confirmed',
+                    'password' => 'confirmed',
                 ],
                     [
-                        'password.min' => "Le champ du mot de passe doit contenir au moins 6 caractères.",
                         'password.confirmed' => 'Le mot de passe ne correspond pas à la confirmation.',
                     ]
                 );

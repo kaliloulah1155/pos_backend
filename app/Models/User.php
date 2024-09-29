@@ -31,13 +31,14 @@ class User extends Authenticatable
         'email',
         'password',
         'profil_id',
+        'sexe',
         'created_user',
         'updated_user',
         'deleted_user',
         'created_at',
         'updated_at',
         'deleted_at',
-        
+
     ];
 
     /**
@@ -65,14 +66,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Profil::class);
     }
-    
+
       public function produits()
     {
         return $this->belongsToMany(Produit::class);
     }
 
 
-    
 
-     
+
+
 }

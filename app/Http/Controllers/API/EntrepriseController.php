@@ -97,7 +97,7 @@ class EntrepriseController extends Controller
           
 
             $entreprise= Entreprise::updateOrCreate(
-                ['id' => $request->id],
+                ['license' => env('REGISTRATION_KEY')],
                 [
                     "libelle"=> $request->libelle,
                     "phone_1"=>$request->phone_1,

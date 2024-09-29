@@ -17,7 +17,7 @@ class CreateTableDepense extends Migration
             $table->id();
             $table->text('description')->nullable();
             $table->integer('montant')->nullable();
-            $table->integer('date_depense')->nullable();
+            $table->date('date_depense')->nullable();
             $table->integer('created_user')->nullable();
             $table->integer('updated_user')->nullable();
             $table->integer('deleted_user')->nullable();

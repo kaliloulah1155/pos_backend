@@ -16,7 +16,7 @@ use App\Http\Controllers\API\TestCartController;
 use App\Http\Controllers\API\CategorieController;
 use App\Http\Controllers\API\EntrepriseController;
 use App\Http\Controllers\API\PermissionController;
-         
+
 Route::group(['prefix' => '/v1'], function () {
     Route::post('registered', [AuthController::class, 'registered']);
     Route::post('login', [AuthController::class, 'login']);
@@ -26,16 +26,16 @@ Route::group(['prefix' => '/v1'], function () {
     Route::post('pwd',[UserController::class,'pwd']);
     Route::post('resetpwd', [AuthController::class, 'resetpwd']);
     Route::post('checkToken', [AuthController::class, 'checkOtp']);
-    
+
     Route::get('test',function(){
         return response()->json(['message' => 'API test successful']);
     });
 
-   
-    
+
+
      Route::get('printOrder/{id}', [TestCartController::class, 'pdfOrder']); //imprimer de la commande
 
-     //LISTE DES COMMANDES   
+     //LISTE DES COMMANDES
      Route::get('orders', [OrderController::class, 'index']);
      Route::get('orders/{id}', [OrderController::class, 'show']);
      Route::get('orders/{id}/items', [OrderController::class, 'items']);
@@ -74,7 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('categories/{id}', [CategorieController::class, 'show']);
         Route::delete('categories/{id}', [CategorieController::class, 'destroy']);
         Route::delete('categories/dl/{id}', [CategorieController::class, 'delete']);
-    
+
         //ACTION
         Route::get('actions', [ActionController::class, 'index']);
         Route::post('actions', [ActionController::class, 'store']);
@@ -82,7 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('actions/{id}', [ActionController::class, 'show']);
         Route::delete('actions/{id}', [ActionController::class, 'destroy']);
         Route::delete('actions/dl/{id}', [ActionController::class, 'delete']);
-  
+
         //MENU
         Route::get('menus', [MenuController::class, 'index']);
         Route::post('menus', [MenuController::class, 'store']);
@@ -91,13 +91,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('menus/{id}', [MenuController::class, 'destroy']);
         Route::delete('menus/dl/{id}', [MenuController::class, 'delete']);
 
-        //Permissions 
+        //Permissions
         Route::post('permissions', [PermissionController::class, 'store'])->withoutMiddleware("throttle:api");
         Route::get('permissions/{id}', [PermissionController::class, 'show']); ///passage de l'id profil
         Route::delete('permissions/{id}', [PermissionController::class, 'destroy']); // passage de l'id profil
-        Route::post('test_permission', [PermissionController::class, 'test_permission']);    
-        
-        
+        Route::post('test_permission', [PermissionController::class, 'test_permission']);
+
+
         //DEPENSES
         Route::get('depenses', [DepenseController::class, 'index']);
         Route::post('depenses', [DepenseController::class, 'store']);
@@ -105,7 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('depenses/{id}', [DepenseController::class, 'update']);
         Route::delete('depenses/{id}', [DepenseController::class, 'destroy']);
         Route::delete('depenses/dl/{id}', [DepenseController::class, 'delete']);
-        
+
         //SALAIRES
         Route::get('salaires', [SalaireController::class, 'index']);
         Route::post('salaires', [SalaireController::class, 'store']);
@@ -113,7 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('salaires/{id}', [SalaireController::class, 'update']);
         Route::delete('salaires/{id}', [SalaireController::class, 'destroy']);
         Route::delete('salaires/dl/{id}', [SalaireController::class, 'delete']);
-        
+
         //PRODUITS
         Route::get('produits', [ProduitController::class, 'index']);
         Route::get('produits_stock', [ProduitController::class, 'stocks'])->name("stocks");
@@ -134,15 +134,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
         //Dashboard
-        Route::get('stats', [DashController::class, 'stats']); 
+        Route::get('stats', [DashController::class, 'stats']);
 
         //Entreprise
         Route::post('entreprise', [EntrepriseController::class, 'store']);
         Route::get('entreprise/{id}', [EntrepriseController::class, 'show']);
         Route::post('licence', [EntrepriseController::class, 'store_licence']);
 
-       
-    
+
+
 
     });
 

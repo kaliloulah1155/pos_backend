@@ -30,17 +30,17 @@ class AuthController extends Controller
 
     public function registered(Request $request)
     {
-        
+
        // Définir les règles de validation
     $rules = [
         'nom' => 'required|string|max:255',
         'prenoms' => 'required|string|max:255',
         'telephone' => ['required', 'regex:/^\d{10}$/'],
         'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:6|confirmed',
+        'password' => 'required|string|confirmed',
         'profil_id' => 'required|integer',
     ];
-   
+
     // Définir les messages personnalisés
     $messages = [
         'nom.required' => 'Le champ nom est requis.',
@@ -57,7 +57,7 @@ class AuthController extends Controller
 
     // Créer le validateur
     $validator = Validator::make($request->all(), $rules, $messages);
-   
+
     // Vérifier si la validation échoue
     if ($validator->fails()) {
         return response()->json([
@@ -65,7 +65,7 @@ class AuthController extends Controller
             'message' => 'Validation failed',
             'errors' => $validator->errors(),
         ], 422);  // 422 Unprocessable Entity
-    } 
+    }
         try {
             $user = User::create([
                 'nom' => $request->nom,
@@ -134,16 +134,16 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         try {
-           
+
             //0173832778
             //ibrahim1155@outlook.com
             $emailOrPhoneNumber = $request->login;
-            
+
             $user = User::where(function ($query) use ($emailOrPhoneNumber) {
                 $query->where('email', utf8_encode($emailOrPhoneNumber))
                     ->orWhere('telephone', utf8_encode($emailOrPhoneNumber));
             })->first();
-           
+
             $deletedRecords = User::withTrashed()
                 ->whereNotNull('deleted_at')
                 ->where(function ($query) use ($emailOrPhoneNumber) {
@@ -196,7 +196,7 @@ class AuthController extends Controller
                 $etat_licence= 1; // licence expiré
             }else{
                 $etat_licence=2; // licence valide
-            }  
+            }
 
             if($etat_licence==0){
                 return response()->json([
@@ -237,8 +237,8 @@ class AuthController extends Controller
             ]);
         }
     }
- 
-    
+
+
 
     public function checkOtp(){
         try{
@@ -266,8 +266,8 @@ class AuthController extends Controller
         }
     }
 
-  
-   
+
+
 
 
 
@@ -305,7 +305,7 @@ class AuthController extends Controller
 
     public function resetpwd(Request $request)
     {
-       
+
 
         $resetRequest = PasswordReset::where('token', $request->token)->first();
 
@@ -340,7 +340,7 @@ class AuthController extends Controller
         ], 201);
 
     }
-    
+
      /**
      * @OA\Get(
      *     path="/infoUser",
@@ -350,23 +350,23 @@ class AuthController extends Controller
      *      @OA\Response(response=200,description="succès"),
      *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
      *      @OA\Response(response=404, description="Ressource introuvable"),
-     *       security={{"sanctum":{}}}  
+     *       security={{"sanctum":{}}}
      * ),
      */
     public function getUserInfo(Request $request)
     {
         try {
             $user = $request->user();
-            
+
             $id=$user['profil_id'];
 
             $entreprise = Entreprise::where("license", "=", env('REGISTRATION_KEY'))->first();
             if ($entreprise) {
                 $entreprise->image = $entreprise->image ? env('IMAGE_PATH_ENTREPRISE') . $entreprise->image : null;
-            }   
-            
+            }
+
             //GESTION DES MENUS
-            
+
              $profil = DB::table('profils')
                 ->select('profils.*')
                 ->where('profils.id', $id)
@@ -374,7 +374,7 @@ class AuthController extends Controller
 
             $menusPerPage = 100;
 
-           
+
             $dataMenus = DB::table('menus')
             ->select('menus.*', 'permissions.*')
             ->leftJoin('permissions', 'menus.id', '=', 'permissions.menu_id')
@@ -384,11 +384,11 @@ class AuthController extends Controller
             ->orderBy('menus.position', 'ASC')
              ->simplePaginate($menusPerPage);
 
-             
-                
+
+
             $pageCount = count(Menu::all()) / $menusPerPage;
 
-           
+
             $dataActions = DB::table('actions')
                 ->select('actions.*')
                 ->distinct('actions.id')
@@ -438,9 +438,9 @@ class AuthController extends Controller
                         'page_count' => ceil($pageCount),
                         //'permissions' => array_diff_key($res_action),
                     ];
-                }       
+                }
             }
-            
+
             //FIN GESTION DES MENUS
             if ($user) {
 
@@ -449,12 +449,12 @@ class AuthController extends Controller
                 $user['profile_name'] = Profil::where('id', $user->profil_id)->value('libelle');
                 $user['profile_code'] = Profil::where('id', $user->profil_id)->value('code');
 
-                unset($entreprise->license); // Masquer la licence 
+                unset($entreprise->license); // Masquer la licence
                 $user["entreprise"]= $entreprise;
 
                 $user['token'] = $request->bearerToken();
                 $user['menus'] =  $result;
-                 
+
                 return response()->json($user);
             } else {
                 return response()->json(['error' => 'User not found'], 404);
