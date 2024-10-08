@@ -91,7 +91,7 @@ class ProfilController extends Controller
         }
 
     }
-    
+
      /**
      * Display a listing of the profils by employee.
      */
