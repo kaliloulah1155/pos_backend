@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Events\ProductScanned;
 use App\Http\Controllers\Controller;
 use App\Models\Entreprise;
 use App\Models\Pos;
@@ -25,31 +26,115 @@ class TestCartController extends Controller
 
         foreach ($cartItems as $item) {
             $product = Produit::find($item->id);
-
-            // Mettre à jour l'image du produit dans l'élément du panier
-            $item['image'] = $product->image ? env('IMAGE_PATH_PRODUITS') . $product->image : null;
+            $item['image'] = $product && $product->image
+                ? env('IMAGE_PATH_PRODUITS') . $product->image
+                : null;
         }
 
         return response()->json([
-            'cartItems' => $cartItems,
-            'total' => $total,
-            'totalProducts' => $totalProducts,
+            'cartItems'         => $cartItems,
+            'total'             => $total,
+            'totalProducts'     => $totalProducts,
             'cartTotalQuantity' => $cartTotalQuantity,
+        ]);
+    }
+
+    /**
+     * SCAN PRODUIT (code barre)
+     */
+    public function scan(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $userId = auth()->user()->id;
+        $code   = trim($request->code);
+
+        // ── Recherche par barcode EN PRIORITÉ, fallback sur code ────
+        $product = Produit::where('barcode', $code)
+                        ->orWhere('code', $code)
+                        ->first();
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Produit introuvable',
+            ], 404);
+        }
+
+        if (intval($product->quantite) <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Stock insuffisant',
+            ], 422);
+        }
+
+        $cartItems = Cart::session($userId)->getContent();
+        foreach ($cartItems as $item) {
+            if ($item->id == $product->id && $item->quantity >= $product->quantite) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stock dépassé',
+                ], 422);
+            }
+        }
+
+        Cart::session($userId)->add([
+            'id'         => $product->id,
+            'name'       => $product->libelle,
+            'quantity'   => 1,
+            'price'      => intval($product->selling_price),
+            'attributes' => [
+                'image'   => $product->image
+                            ? env('IMAGE_PATH_PRODUITS') . $product->image
+                            : null,
+                'barcode' => $product->barcode,   // ← barcode au lieu de code
+            ],
+        ]);
+
+        $cartTotal    = Cart::session($userId)->getTotal();
+        $cartQuantity = Cart::session($userId)->getTotalQuantity();
+
+        broadcast(new ProductScanned(
+            cartItem: [
+                'id'            => $product->id,
+                'name'          => $product->libelle,
+                'price'         => intval($product->selling_price),
+                'quantity'      => 1,
+                'image'         => $product->image
+                                    ? env('IMAGE_PATH_PRODUITS') . $product->image
+                                    : null,
+                'cart_total'    => $cartTotal,
+                'cart_quantity' => $cartQuantity,
+            ],
+            userId: $userId,
+        ))->toOthers();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Produit ajouté',
+            'product' => [
+                'id'      => $product->id,
+                'name'    => $product->libelle,
+                'price'   => $product->selling_price,
+                'image'   => $product->image
+                            ? env('IMAGE_PATH_PRODUITS') . $product->image
+                            : null,
+                'barcode' => $product->barcode,   // ← retourné au mobile
+            ],
         ]);
     }
 
     public function addItem($productId)
     {
-
-        $userId = auth()->user()->id;
+        $userId  = auth()->user()->id;
         $product = Produit::findOrFail($productId);
+
         if (intval($product->quantite) == 0) {
-            return response()->json([
-                'message' => 'Stock insuffisant',
-            ]);
+            return response()->json(['message' => 'Stock insuffisant']);
         }
 
-        // Récupérer le contenu du panier
         $cartItems = Cart::session($userId)->getContent();
 
         foreach ($cartItems as $k1 => $v1) {
@@ -62,62 +147,62 @@ class TestCartController extends Controller
             }
         }
 
-        // Sinon, ajoutez le produit au panier
         Cart::session($userId)->add([
-            'id' => $product->id,
-            'name' => $product->libelle,
-            'quantity' => 1,
-            'price' => intval($product->selling_price),
-            'image' => $product->image ? env('IMAGE_PATH_PRODUITS') . $product->image : null,
+            'id'         => $product->id,
+            'name'       => $product->libelle,
+            'quantity'   => 1,
+            'price'      => intval($product->selling_price),
+            'attributes' => [
+                'image' => $product->image
+                    ? env('IMAGE_PATH_PRODUITS') . $product->image
+                    : null,
+            ],
         ]);
 
         return response()->json([
             'message' => 'Produit ajouté au panier',
         ]);
-
     }
+
     public function clearCart()
     {
-        $userId = auth()->user()->id;
-        $cartCollection = Cart::session($userId)->getContent();
+        $userId          = auth()->user()->id;
+        $cartCollection  = Cart::session($userId)->getContent();
         Cart::session($userId)->clear();
+
         return response()->json([
             "total" => Cart::getTotal(),
-            "cart" => $cartCollection,
+            "cart"  => $cartCollection,
         ]);
     }
 
     public function increaseQuantity($productId)
     {
-
-        $userId = auth()->user()->id;
+        $userId  = auth()->user()->id;
         $product = Produit::findOrFail($productId);
+
         if (intval($product->quantite) == 0) {
-            return response()->json([
-                'message' => 'Stock insuffisant',
-            ]);
+            return response()->json(['message' => 'Stock insuffisant']);
         }
 
-        // Récupérer le contenu du panier
         $cartItems = Cart::session($userId)->getContent();
 
         foreach ($cartItems as $k1 => $v1) {
             if ($k1 == strval($productId)) {
                 if (intval($v1["quantity"]) > intval($product->quantite) - 1) {
                     return response()->json([
-                        'error' => true,
-                        'message' => 'La quantité du produit est superieur au stock',
+                        'error'   => true,
+                        'message' => 'Stock dépassé',
                     ]);
                 }
             }
         }
-        // Sinon, ajoutez le produit au panier
+
         Cart::session($userId)->add([
-            'id' => $product->id,
-            'name' => $product->libelle,
+            'id'       => $product->id,
+            'name'     => $product->libelle,
             'quantity' => 1,
-            'price' => intval($product->selling_price),
-            'image' => $product->image ? env('IMAGE_PATH_PRODUITS') . $product->image : null,
+            'price'    => intval($product->selling_price),
         ]);
 
         return response()->json(['message' => 'Produit incrementé']);
@@ -125,152 +210,126 @@ class TestCartController extends Controller
 
     public function decreaseQuantity($productId)
     {
-        $userId = auth()->user()->id;
-
-        // Récupérer le contenu du panier
+        $userId    = auth()->user()->id;
         $cartItems = Cart::session($userId)->getContent();
 
-        // Parcourir les éléments du panier pour trouver le produit correspondant
         foreach ($cartItems as $cartItem) {
-
             if ($cartItem->id == $productId) {
 
-                // Supprimer l'élément du panier avec la quantité actuelle
                 Cart::session($userId)->remove($cartItem->id);
+
                 if (($cartItem->quantity - 1) == 0) {
-                    Cart::session($userId)->remove($cartItem->id);
-                    return response()->json(['message' => 'Produit supprimé du panier']);
+                    return response()->json(['message' => 'Produit supprimé']);
                 }
 
-                // Ajouter le produit de nouveau avec une quantité diminuée
                 Cart::session($userId)->add([
-                    'id' => $cartItem->id,
-                    'name' => $cartItem->name,
+                    'id'       => $cartItem->id,
+                    'name'     => $cartItem->name,
                     'quantity' => $cartItem->quantity - 1,
-                    'price' => $cartItem->price,
-                    'attributes' => $cartItem->attributes,
+                    'price'    => $cartItem->price,
                 ]);
 
                 return response()->json(['message' => 'Produit decrementé']);
             }
         }
 
-        // Si le produit n'est pas dans le panier, retourner un message d'erreur
         return response()->json(['message' => 'Produit introuvable'], 404);
     }
 
     public function removeItem($productId)
     {
-
-        $userId = auth()->user()->id;
-        // Récupérer le contenu du panier
+        $userId    = auth()->user()->id;
         $cartItems = Cart::session($userId)->getContent();
-        // Parcourir les éléments du panier pour trouver le produit correspondant
+
         foreach ($cartItems as $cartItem) {
-
             if ($cartItem->id == $productId) {
-
-                // Supprimer l'élément du panier avec la quantité actuelle
                 Cart::session($userId)->remove($cartItem->id);
-                return response()->json(['message' => 'Produit supprimé du panier']);
-
+                return response()->json(['message' => 'Produit supprimé']);
             }
         }
-        // Si le produit n'est pas dans le panier, retourner un message d'erreur
-        return response()->json(['message' => 'Produit introuvable'], 404);
 
+        return response()->json(['message' => 'Produit introuvable'], 404);
     }
 
     public function addOrder(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
-            'client_id' => 'required|integer',
-            'tva' => 'required|integer',
-            'remise' => 'required|integer',
-            'espece' => 'required|integer',
-            'qte_total' => 'required|integer',
-            'paid_method_id' => 'required|integer',
+            'client_id'     => 'required|integer',
+            'tva'           => 'required|integer',
+            'remise'        => 'required|integer',
+            'espece'        => 'required|integer',
+            'qte_total'     => 'required|integer',
+            'paid_method_id'=> 'required|integer',
         ]);
 
-        // Vérifier les erreurs de validation
         if ($validator->fails()) {
-            return response()->json(["error" => true, "info" => "Champ requis manquant", "data" => $validator->errors()]);
+            return response()->json([
+                "error" => true,
+                "info"  => "Champ requis manquant",
+                "data"  => $validator->errors()
+            ]);
         }
-        $userId = auth()->user()->id;
-        $data_pos = [];
+
+        $userId            = auth()->user()->id;
+        $data_pos          = [];
         $data_pos_cart_items = [];
 
-        $data_pos["created_user"] = intval($userId);
-        $data_pos["client_id"] = intval($request->client_id);
-        $data_pos["tva"] = intval($request->tva);
-        $data_pos["remise"] = intval($request->remise);
-        $data_pos["espece"] = intval($request->espece);
-        $data_pos["monnaie"] = intval($request->monnaie);
-        $data_pos["qte_total"] = intval($request->qte_total);
-        $data_pos["paid_method_id"] = intval($request->paid_method_id);
-        $data_pos["print_status"] = 0;
-        $data_pos["status"] = 1;
+        $data_pos["created_user"]   = $userId;
+        $data_pos["client_id"]      = $request->client_id;
+        $data_pos["tva"]            = $request->tva;
+        $data_pos["remise"]         = $request->remise;
+        $data_pos["espece"]         = $request->espece;
+        $data_pos["monnaie"]        = $request->monnaie;
+        $data_pos["qte_total"]      = $request->qte_total;
+        $data_pos["paid_method_id"] = $request->paid_method_id;
+        $data_pos["print_status"]   = 0;
+        $data_pos["status"]         = 1;
         $data_pos["transaction_id"] = strtoupper(uniqid());
 
-        $pos = Pos::updateOrCreate(
-            [
-                'transaction_id' => strtoupper(uniqid()),
-            ], $data_pos);
-
-        // Récupérer le contenu du panier
+        $pos       = Pos::create($data_pos);
         $cartItems = Cart::session($userId)->getContent();
 
-        if (count($cartItems) > 0) {
+        foreach ($cartItems as $cartItem) {
+            $data_pos_cart_items[] = [
+                'pos_id'       => $pos->id,
+                'item_id'      => $cartItem->id,
+                'qte'          => $cartItem->quantity,
+                'price'        => $cartItem->price,
+                'price_by_qte' => $cartItem->price * $cartItem->quantity,
+                'status'       => 1,
+                'created_user' => $userId,
+            ];
 
-            foreach ($cartItems as $cartItem) {
-
-                $data_pos_cart_items[] = [
-                    'pos_id' => $pos->id,
-                    'item_id' => intval($cartItem->id),
-                    'qte' => intval($cartItem->quantity),
-                    'price' => intval($cartItem->price),
-                    'price_by_qte' => intval($cartItem->price) * intval($cartItem->quantity),
-                    'status' => 1,
-                    'created_user' => intval($userId),
-                ];
-
-                //Mouvement du stock
-                $this->checkout(intval($cartItem->id), intval($cartItem->quantity));
-            }
-
+            $this->checkout($cartItem->id, $cartItem->quantity);
         }
 
-        // Vérifiez si le tableau n'est pas vide avant d'insérer
         if (!empty($data_pos_cart_items)) {
             PosCartItem::insert($data_pos_cart_items);
         }
 
-        //Vider le panier
         $this->clearCart();
 
         return response()->json([
-            'status' => 'success',
-            'pos_id' => $pos->id,
+            'status'  => 'success',
+            'pos_id'  => $pos->id,
             'message' => 'Commande effectuée',
         ], 201);
     }
 
     public function checkout($id, $qte)
     {
-
         DB::beginTransaction();
 
         try {
-
             $product = Produit::findOrFail($id);
-            if (intval($product->quantite) < $qte) {
 
+            if ($product->quantite < $qte) {
                 return response()->json([
-                    'status' => 'error',
-                    'message' => 'Stock insuffisant pour le produit : ' . $product->name,
-                ], 201);
+                    'status'  => 'error',
+                    'message' => 'Stock insuffisant',
+                ]);
             }
+
             $product->quantite -= $qte;
             $product->save();
 
@@ -280,86 +339,4 @@ class TestCartController extends Controller
             DB::rollBack();
         }
     }
-
-    //Generation du pdf à imprimer
-
-    /**
-     * @OA\Get(
-     *     path="/printOrder/{id}",
-     *     tags={"Commandes"},
-     *      summary="Lien de l'imprimer du ticket | id=identifiant de la commande",
-     *      description="Retourne le lien de l'imprimer",
-     *      @OA\Parameter(
-     *         in="path",
-     *         name="id",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *      @OA\Response(response=200,description="succès"),
-     *      @OA\Response(response=401, description="Token expiré | Token invalide | Token absent "),
-     *      @OA\Response(response=404, description="Ressource introuvable")
-     * ),
-     */
-    public function pdfOrder($id)
-    {
-
-        try {
-
-            $resPos = DB::select("CALL GetPos(?)", [$id]);
-            $resPosItems = DB::select("CALL GetPosItem(?)", [$id]);
-
-            //Info entreprise
-
-            $entreprise = Entreprise::where("license", "=", env('REGISTRATION_KEY'))->first();
-            /* if ($entreprise) {
-            $entreprise->image = $entreprise->image ? env('IMAGE_PATH_ENTREPRISE') . $entreprise->image : null;
-            } */
-
-            $fullpath = public_path('images/entreprise/' . $entreprise->image);
-
-            // Vérifier si le fichier existe
-            if (file_exists($fullpath)) {
-                // Obtenir l'extension du fichier
-                $imageType = pathinfo($fullpath, PATHINFO_EXTENSION);
-
-                // Définir le type MIME correct en fonction de l'extension du fichier
-                switch (strtolower($imageType)) {
-                    case 'jpg':
-                    case 'jpeg':
-                        $mimeType = 'image/jpeg';
-                        break;
-                    case 'png':
-                        $mimeType = 'image/png';
-                        break;
-                    // Vous pouvez ajouter d'autres types MIME ici si nécessaire
-                    default:
-                        $mimeType = 'application/octet-stream';
-                        break;
-                }
-                // Lire le contenu du fichier et l'encoder en base64
-                $imageData = file_get_contents($fullpath);
-                $base64Image = base64_encode($imageData);
-            }else {
-                $mimeType = '';
-                $base64Image = '';
-            }
-
-            $pdf = PDF::loadView('pdf.print_order', [
-                'resPos' => $resPos,
-                'resPosItems' => $resPosItems,
-                'resEnterp' => $entreprise,
-                'mimeType'=>$mimeType,
-                'base64Image'=>$base64Image,
-            ])->setPaper([0, 0, 300, 400], 'portrait');
-            $pdf->getDomPDF()->set_option("enable_php", true);
-            return $pdf->stream('print_order' . date('Y-m-d_H-i-s') . '.pdf');
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-                'message' => 'Something went wrong in TestCartController.pdfOrder',
-            ]);
-        }
-    }
-
 }

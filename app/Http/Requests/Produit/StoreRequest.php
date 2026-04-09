@@ -6,25 +6,21 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRequest extends FormRequest
 {
-     
- /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
-     */
     public function rules(): array
     {
         return [
-            'libelle'=>'required|string|max:255|unique:produits',
+            'libelle' => 'required|string|max:255|unique:produits',
+            'barcode' => 'nullable|string|unique:produits,barcode',  // ← ajouté
         ];
     }
-    
+
     public function messages()
     {
         return [
             'libelle.required' => 'Ce champ est requis.',
-            'libelle.unique' => 'Ce libelle existe.',
-            'libelle.max' => 'Le champ Libelle ne doit pas dépasser 255 caractères.' 
+            'libelle.unique'   => 'Ce libellé existe déjà.',
+            'libelle.max'      => 'Le champ Libellé ne doit pas dépasser 255 caractères.',
+            'barcode.unique'   => 'Ce barcode est déjà utilisé par un autre produit.',  // ← ajouté
         ];
     }
 }
