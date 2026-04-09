@@ -482,37 +482,6 @@
                 ]
             }
         },
-        "/printOrder/{id}": {
-            "get": {
-                "tags": [
-                    "Commandes"
-                ],
-                "summary": "Lien de l'imprimer du ticket | id=identifiant de la commande",
-                "description": "Retourne le lien de l'imprimer",
-                "operationId": "74ce734b20d85ff9d0e2b490e4019a30",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "succès"
-                    },
-                    "401": {
-                        "description": "Token expiré | Token invalide | Token absent "
-                    },
-                    "404": {
-                        "description": "Ressource introuvable"
-                    }
-                }
-            }
-        },
         "/pwd": {
             "post": {
                 "tags": [
