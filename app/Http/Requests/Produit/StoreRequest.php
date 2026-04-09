@@ -10,7 +10,7 @@ class StoreRequest extends FormRequest
     {
         return [
             'libelle' => 'required|string|max:255|unique:produits',
-            'barcode' => 'nullable|string|unique:produits,barcode',  // ← ajouté
+            'barcode' => 'nullable|string|unique:produits,barcode',  
         ];
     }
 
