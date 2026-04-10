@@ -14,7 +14,11 @@
         "intervention/image": "^2.7",
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
-        "laravel/tinker": "^2.5"
+        "laravel/tinker": "^2.5",
+        "picqer/php-barcode-generator": "^3.2",
+        "pusher/pusher-php-server": "6.0",
+        "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/laravel-tail": "^4.6"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

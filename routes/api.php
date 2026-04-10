@@ -20,9 +20,9 @@ use App\Http\Controllers\API\PermissionController;
 Route::group(['prefix' => '/v1'], function () {
     Route::post('registered', [AuthController::class, 'registered']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::get('permissions/menu/{id}', [PermissionController::class, 'menu_profil']); // passage de l'id profil
+    Route::get('permissions/menu/{id}', [PermissionController::class, 'menu_profil']);
 
-    //Password reset
+    // Password reset
     Route::post('pwd',[UserController::class,'pwd']);
     Route::post('resetpwd', [AuthController::class, 'resetpwd']);
     Route::post('checkToken', [AuthController::class, 'checkOtp']);
@@ -31,23 +31,22 @@ Route::group(['prefix' => '/v1'], function () {
         return response()->json(['message' => 'API test successful']);
     });
 
+    // Impression commande
+    Route::get('printOrder/{id}', [TestCartController::class, 'pdfOrder']);
 
-
-     Route::get('printOrder/{id}', [TestCartController::class, 'pdfOrder']); //imprimer de la commande
-
-     //LISTE DES COMMANDES
-     Route::get('orders', [OrderController::class, 'index']);
-     Route::get('orders/{id}', [OrderController::class, 'show']);
-     Route::get('orders/{id}/items', [OrderController::class, 'items']);
-     //FIN::COMMANDES
+    // COMMANDES
+    Route::get('orders', [OrderController::class, 'index']);
+    Route::get('orders/{id}', [OrderController::class, 'show']);
+    Route::get('orders/{id}/items', [OrderController::class, 'items']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::group(['prefix' => '/v1'], function () {
+
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('infoUser',[AuthController::class, 'getUserInfo']);
 
-        //USER
+        // USER
         Route::get('users', [UserController::class, 'index']);
         Route::get('employes', [UserController::class, 'employes']);
         Route::get('clients', [UserController::class, 'clients']);
@@ -57,7 +56,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('users/{id}', [UserController::class, 'destroy']);
         Route::delete('users/dl/{id}', [UserController::class, 'delete']);
         Route::get('users/{id}', [UserController::class, 'show']);
-        //PROFIL
+
+        // PROFIL
         Route::post('profils', [ProfilController::class, 'store']);
         Route::get('profils', [ProfilController::class, 'index']);
         Route::get('profils_e', [ProfilController::class, 'index_e']);
@@ -66,7 +66,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('profils/{id}', [ProfilController::class, 'destroy']);
         Route::delete('profils/dl/{id}', [ProfilController::class, 'delete']);
         Route::get('profils/{id}', [ProfilController::class, 'show']);
-        //CATEGORIE
+
+        // CATEGORIE
         Route::get('categories', [CategorieController::class, 'index']);
         Route::get('categories_slug/{slug}', [CategorieController::class, 'index_slug']);
         Route::post('categories', [CategorieController::class, 'store']);
@@ -75,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('categories/{id}', [CategorieController::class, 'destroy']);
         Route::delete('categories/dl/{id}', [CategorieController::class, 'delete']);
 
-        //ACTION
+        // ACTION
         Route::get('actions', [ActionController::class, 'index']);
         Route::post('actions', [ActionController::class, 'store']);
         Route::post('actions/{id}', [ActionController::class, 'update']);
@@ -83,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('actions/{id}', [ActionController::class, 'destroy']);
         Route::delete('actions/dl/{id}', [ActionController::class, 'delete']);
 
-        //MENU
+        // MENU
         Route::get('menus', [MenuController::class, 'index']);
         Route::post('menus', [MenuController::class, 'store']);
         Route::post('menus/{id}', [MenuController::class, 'update']);
@@ -91,14 +92,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('menus/{id}', [MenuController::class, 'destroy']);
         Route::delete('menus/dl/{id}', [MenuController::class, 'delete']);
 
-        //Permissions
+        // PERMISSIONS
         Route::post('permissions', [PermissionController::class, 'store'])->withoutMiddleware("throttle:api");
-        Route::get('permissions/{id}', [PermissionController::class, 'show']); ///passage de l'id profil
-        Route::delete('permissions/{id}', [PermissionController::class, 'destroy']); // passage de l'id profil
+        Route::get('permissions/{id}', [PermissionController::class, 'show']);
+        Route::delete('permissions/{id}', [PermissionController::class, 'destroy']);
         Route::post('test_permission', [PermissionController::class, 'test_permission']);
 
-
-        //DEPENSES
+        // DEPENSES
         Route::get('depenses', [DepenseController::class, 'index']);
         Route::post('depenses', [DepenseController::class, 'store']);
         Route::get('depenses/{id}', [DepenseController::class, 'show']);
@@ -106,7 +106,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('depenses/{id}', [DepenseController::class, 'destroy']);
         Route::delete('depenses/dl/{id}', [DepenseController::class, 'delete']);
 
-        //SALAIRES
+        // SALAIRES
         Route::get('salaires', [SalaireController::class, 'index']);
         Route::post('salaires', [SalaireController::class, 'store']);
         Route::get('salaires/{id}', [SalaireController::class, 'show']);
@@ -114,14 +114,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('salaires/{id}', [SalaireController::class, 'destroy']);
         Route::delete('salaires/dl/{id}', [SalaireController::class, 'delete']);
 
-        //PRODUITS
+        // PRODUITS
         Route::get('produits', [ProduitController::class, 'index']);
         Route::get('produits_stock', [ProduitController::class, 'stocks'])->name("stocks");
         Route::post('produits', [ProduitController::class, 'store']);
         Route::post('produits/{id}', [ProduitController::class, 'update']);
         Route::delete('produits/{id}', [ProduitController::class, 'destroy']);
         Route::delete('produits/dl/{id}', [ProduitController::class, 'delete']);
-        //CART
+
+        // CART
         Route::get('cart', [TestCartController::class, 'content']);
         Route::post('cart/{productId}', [TestCartController::class, 'addItem']);
         Route::get('cartclear', [TestCartController::class, 'clearCart']);
@@ -129,21 +130,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cart/{rowId}/decrease', [TestCartController::class,'decreaseQuantity']);
         Route::delete('cart/{id}', [TestCartController::class, 'removeItem']);
         Route::post('addOrder', [TestCartController::class, 'addOrder']);
-        Route::get('pos_categories', [ProduitController::class, 'pos_categorie']);   //liste des categories du pos
-        Route::get('pos_produit_by_categorie/{categoryId}', [ProduitController::class, 'pos_produit_by_categorie']);   //liste des categories du pos
 
+        // POS
+        Route::get('pos_categories', [ProduitController::class, 'pos_categorie']);
+        Route::get('pos_produit_by_categorie/{categoryId}', [ProduitController::class, 'pos_produit_by_categorie']);
 
-        //Dashboard
+        // SCAN (corrigé)
+        Route::post('scan', [TestCartController::class, 'scan']);
+
+        // DASHBOARD
         Route::get('stats', [DashController::class, 'stats']);
 
-        //Entreprise
+        // ENTREPRISE
         Route::post('entreprise', [EntrepriseController::class, 'store']);
         Route::get('entreprise/{id}', [EntrepriseController::class, 'show']);
         Route::post('licence', [EntrepriseController::class, 'store_licence']);
-
-
-
-
     });
-
 });

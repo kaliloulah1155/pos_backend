@@ -21,7 +21,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
  *     description="Lien en local"
  * )
  * @OA\Server(
- *     url="https://pos.kehogroupe-ci.com/api/v1",
+ *     url="http://vmi2610497.contaboserver.net:2025/api/v1",
  *     description="Lien de la recette"
  * )
  */
