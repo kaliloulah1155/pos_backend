@@ -140,9 +140,15 @@ class ProduitController extends Controller
                 $existingProduit = Produit::where('code', $code)->first();
             }
 
+            $barcode = $request->input('barcode');
+            $barcode = !is_null($barcode) ? trim($barcode) : null;
+            if ($barcode === '') {
+                $barcode = null;
+            }
+
             // ── Vérifier unicité du barcode ──────────────────────
-            if ($request->barcode) {
-                $existingBarcode = Produit::where('barcode', $request->barcode)->first();
+            if ($barcode) {
+                $existingBarcode = Produit::withTrashed()->where('barcode', $barcode)->first();
                 if ($existingBarcode) {
                     return response()->json([
                         'error'   => true,
@@ -154,7 +160,7 @@ class ProduitController extends Controller
             $produit = Produit::create([
                 'libelle'        => $request->libelle,
                 'code'           => $code,
-                'barcode'        => $request->barcode ?? null,   // ← ajouté
+                'barcode'        => $barcode,
                 'buying_price'   => $request->buying_price  ?? 0,
                 'selling_price'  => $request->selling_price ?? 0,
                 'quantite'       => $request->quantite       ?? 0,
@@ -194,9 +200,16 @@ class ProduitController extends Controller
                 ], 200);
             }
 
+            $barcode = $request->input('barcode');
+            $barcode = !is_null($barcode) ? trim($barcode) : null;
+            if ($barcode === '') {
+                $barcode = null;
+            }
+
             // ── Vérifier unicité du barcode (ignorer le produit en cours) ──
-            if ($request->barcode && $request->barcode !== $produit->barcode) {
-                $existingBarcode = Produit::where('barcode', $request->barcode)
+            if ($barcode && $barcode !== $produit->barcode) {
+                $existingBarcode = Produit::withTrashed()
+                                          ->where('barcode', $barcode)
                                           ->where('id', '!=', $id)
                                           ->first();
                 if ($existingBarcode) {
@@ -212,7 +225,7 @@ class ProduitController extends Controller
             }
 
             $produit->libelle        = $request->libelle        ?? $produit->libelle;
-            $produit->barcode        = $request->barcode        ?? $produit->barcode;  // ← ajouté
+            $produit->barcode        = !is_null($barcode) ? $barcode : $produit->barcode;
             $produit->buying_price   = intval($request->buying_price)   ?? $produit->buying_price;
             $produit->selling_price  = intval($request->selling_price)  ?? $produit->selling_price;
             $produit->quantite       = intval($request->quantite)       ?? $produit->quantite;

@@ -75,6 +75,10 @@ class ScanController extends Controller
         $item->price_by_qte = $item->price * $item->qte;
         $item->save();
 
+        $totals = PosCartItem::where('pos_id', $pos->id)
+            ->selectRaw('COALESCE(SUM(qte), 0) as cart_quantity, COALESCE(SUM(price_by_qte), 0) as cart_total')
+            ->first();
+
         // ⚡ Réponse optimisée (ultra légère)
         $cartItem = [
             'id'           => $item->id,
@@ -85,10 +89,13 @@ class ScanController extends Controller
             'price'        => (float) $item->price,
             'quantity'     => $item->qte,
             'total_price'  => (float) $item->price_by_qte,
+            'image'        => $produit->image ? env('IMAGE_PATH_PRODUITS') . $produit->image : null,
+            'cart_quantity'=> (int) ($totals->cart_quantity ?? 0),
+            'cart_total'   => (float) ($totals->cart_total ?? 0),
         ];
 
-        // ⚡ Broadcast temps réel (POS multi caisses)
-        broadcast(new ProductScanned($cartItem, $user->id))->toOthers();
+        // ⚡ Broadcast temps réel (canal public cart.{userId})
+        broadcast(new ProductScanned($cartItem, $user->id));
 
         return response()->json([
             'message'   => 'OK',
