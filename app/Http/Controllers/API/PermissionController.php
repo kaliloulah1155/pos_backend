@@ -7,11 +7,11 @@ use App\Http\Requests\Permission\StoreRequest;
 use App\Models\Menu;
 use App\Models\Permission;
 use App\Services\Serpermission;
+use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class PermissionController extends Controller
 {
@@ -22,33 +22,24 @@ class PermissionController extends Controller
     public function store(StoreRequest $request)
     {
         try {
-
-            
             $this->destroy($request->profil_id);
-
             $data_perm = [];
 
-            foreach ($request->choices as $data=> $checked) {
+            foreach ($request->choices as $data => $checked) {
                 $arr_splt = explode("-", $data);
-
-               
-
                 $menu_id = (int) $arr_splt[0];
                 $action_id = (int) $arr_splt[1];
-
-                if($checked==true){
-                        $data_perm[] = [
-                            'menu_id' => $menu_id,
-                            'profil_id' => $request->profil_id,
-                            'action_id' => $action_id,
-                            'created_user' => Auth::id(),
-                            'created_at' => Carbon::now(),
-                        ];
-               }
+                if ($checked == true) {
+                    $data_perm[] = [
+                        'menu_id' => $menu_id,
+                        'profil_id' => $request->profil_id,
+                        'action_id' => $action_id,
+                        'created_user' => Auth::id(),
+                        'created_at' => Carbon::now(),
+                    ];
+                }
             }
-
             DB::table('permissions')->insert($data_perm);
-
             return response()->json([
                 'result' => true,
                 "message" => "succès",
@@ -84,13 +75,7 @@ class PermissionController extends Controller
                 ->simplePaginate($menusPerPage);
             $pageCount = count(Menu::all()) / $menusPerPage;
 
-            /*    dd( $dataMenus);
-            return response()->json([
-            'paginate' => $dataMenus,
-            'page_count' => ceil($pageCount),
-            ], 200);
-            exit;
-             */
+
             $dataActions = DB::table('actions')
                 ->select('actions.*')
                 ->distinct('actions.id')
