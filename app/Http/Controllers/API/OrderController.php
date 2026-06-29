@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use Carbon\Carbon;
+use App\Models\Produit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -212,8 +213,53 @@ class OrderController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    /**
+     * Supprime une vente (réservé au Super admin).
+     * Le stock des produits vendus est restitué.
+     */
     public function destroy($id)
     {
-        //
+        // Garde : uniquement le Super admin (profil SAD)
+        $user = auth()->user();
+        $profilCode = $user ? DB::table('profils')->where('id', $user->profil_id)->value('code') : null;
+        if ($profilCode !== 'SAD') {
+            return response()->json([
+                'success' => false,
+                'message' => "Action réservée au Super admin",
+            ], 403);
+        }
+
+        DB::beginTransaction();
+        try {
+            $pos = DB::table('pos')->where('id', $id)->first();
+            if (!$pos) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Vente introuvable'], 404);
+            }
+
+            // Restituer le stock des articles de la vente
+            $items = DB::table('pos_cart_items')->where('pos_id', $id)->get();
+            foreach ($items as $item) {
+                $produit = Produit::find($item->item_id);
+                if ($produit) {
+                    $produit->quantite = intval($produit->quantite) + intval($item->qte);
+                    $produit->save();
+                }
+            }
+
+            DB::table('pos_cart_items')->where('pos_id', $id)->delete();
+            DB::table('pos')->where('id', $id)->delete();
+
+            DB::commit();
+
+            return response()->json(['success' => true, 'message' => 'Vente supprimée']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error'   => $e->getMessage(),
+                'message' => 'Erreur dans OrderController.destroy',
+            ], 500);
+        }
     }
 }

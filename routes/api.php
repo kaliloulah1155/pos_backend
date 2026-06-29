@@ -145,10 +145,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('pos_categories', [ProduitController::class, 'pos_categorie']);
         Route::get('pos_produit_by_categorie/{categoryId}', [ProduitController::class, 'pos_produit_by_categorie']);
 
+        // VENTES (suppression réservée au Super admin)
+        Route::delete('orders/{id}', [OrderController::class, 'destroy']);
+
         // BOUTIQUE EN LIGNE (back-office - gestion des commandes)
         Route::get('boutique/orders', [BoutiqueController::class, 'index']);
         Route::get('boutique/orders/{id}', [BoutiqueController::class, 'show']);
         Route::post('boutique/orders/{id}/status', [BoutiqueController::class, 'updateStatus']);
+        Route::delete('boutique/orders/{id}', [BoutiqueController::class, 'destroy']);
 
         // SCAN (corrigé)
         Route::post('scan', [TestCartController::class, 'scan']);

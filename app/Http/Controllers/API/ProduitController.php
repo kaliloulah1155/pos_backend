@@ -347,7 +347,10 @@ class ProduitController extends Controller
     public function pos_categorie()
     {
         try {
-            $categories = Categorie::where("statut", 1)->get();
+            // Uniquement les catégories ayant au moins un produit
+            $categories = Categorie::where("statut", 1)
+                ->whereHas('produits')
+                ->get();
 
             $mappedCategories = $categories->map(function ($categorie) {
                 return [

@@ -376,7 +376,7 @@ class AuthController extends Controller
 
 
             $dataMenus = DB::table('menus')
-            ->select('menus.*', 'permissions.*')
+            ->select('menus.*', 'permissions.*', 'menus.menu_id as parent_menu_id')
             ->leftJoin('permissions', 'menus.id', '=', 'permissions.menu_id')
             ->where('menus.statut', 1)
             ->whereNull('menus.deleted_at')
@@ -435,6 +435,7 @@ class AuthController extends Controller
                         'resourceName' => $lib_menu_lib,
                         'resourceIcon' => $lib_menu_icon,
                         'resourcePath' => $lib_menu_path,
+                        'parentId' => $dataMenu->parent_menu_id,
                         'page_count' => ceil($pageCount),
                         //'permissions' => array_diff_key($res_action),
                     ];

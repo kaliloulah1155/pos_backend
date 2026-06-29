@@ -543,4 +543,57 @@ SVG;
             ], 500);
         }
     }
+
+    /**
+     * Supprime définitivement une commande en ligne et son panier.
+     * Si la commande avait été "traitée", le stock est restitué.
+     */
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try {
+            $pos = Pos::where('id', $id)->where('order_type', 'online')->first();
+
+            if (!$pos) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Commande introuvable'], 404);
+            }
+
+            $items = PosCartItem::where('pos_id', $pos->id)->get();
+
+            // Restituer le stock si la commande avait été traitée (stock décrémenté)
+            if ($pos->order_status === 'processed') {
+                foreach ($items as $item) {
+                    $produit = Produit::find($item->item_id);
+                    if ($produit) {
+                        $produit->quantite = intval($produit->quantite) + intval($item->qte);
+                        $produit->save();
+                    }
+                }
+            }
+
+            PosCartItem::where('pos_id', $pos->id)->delete();
+            $pos->delete();
+
+            DB::commit();
+
+            try {
+                broadcast(new OnlineOrderUpdated((int) $id, 'deleted'));
+            } catch (\Throwable $e) {
+                // ne bloque pas la suppression
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Commande supprimée',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error'   => $e->getMessage(),
+                'message' => 'Erreur dans BoutiqueController.destroy',
+            ], 500);
+        }
+    }
 }
