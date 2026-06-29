@@ -30,6 +30,7 @@ class ProduitController extends Controller
                     'produits.selling_price',
                     'produits.fournisseur_id',
                     'produits.quantite',
+                    'produits.online',
                     'categories.libelle as category_name'
                 )
                 ->leftJoin('categorie_produit', 'produits.id', '=', 'categorie_produit.produit_id')
@@ -46,6 +47,7 @@ class ProduitController extends Controller
                     'libelle'        => $firstProduit->libelle,
                     'code'           => $firstProduit->code,
                     'barcode'        => $firstProduit->barcode,   // ← ajouté
+                    'online'         => (int) $firstProduit->online,
                     'fournisseur_id' => $user ? $user->id : null,
                     'fournisseur'    => $user ? $user->nom . ' ' . $user->prenoms : "NEANT",
                     'categories'     => $produitGroup->pluck('category_name')->all(),
@@ -84,6 +86,7 @@ class ProduitController extends Controller
                     'produits.selling_price',
                     'produits.fournisseur_id',
                     'produits.quantite',
+                    'produits.online',
                     'categories.libelle as category_name'
                 )
                 ->leftJoin('categorie_produit', 'produits.id', '=', 'categorie_produit.produit_id')
@@ -101,6 +104,7 @@ class ProduitController extends Controller
                     'libelle'          => $firstProduit->libelle,
                     'code'             => $firstProduit->code,
                     'barcode'          => $firstProduit->barcode,  // ← ajouté
+                    'online'           => (int) $firstProduit->online,
                     'fournisseur'      => $user ? $user->nom . ' ' . $user->prenoms : "NEANT",
                     'categories'       => $produitGroup->pluck('category_name')->all(),
                     'image'            => $firstProduit->image
@@ -164,6 +168,7 @@ class ProduitController extends Controller
                 'buying_price'   => $request->buying_price  ?? 0,
                 'selling_price'  => $request->selling_price ?? 0,
                 'quantite'       => $request->quantite       ?? 0,
+                'online'         => (int) $request->input('online', 1),
                 'fournisseur_id' => $request->fournisseur_id ?? null,
                 'created_user'   => Auth::id(),
             ]);
@@ -229,6 +234,7 @@ class ProduitController extends Controller
             $produit->buying_price   = intval($request->buying_price)   ?? $produit->buying_price;
             $produit->selling_price  = intval($request->selling_price)  ?? $produit->selling_price;
             $produit->quantite       = intval($request->quantite)       ?? $produit->quantite;
+            $produit->online         = $request->has('online') ? (int) $request->online : $produit->online;
             $produit->fournisseur_id = intval($request->fournisseur_id) ?? $produit->fournisseur_id;
             $produit->updated_user   = Auth::id();
 
@@ -245,6 +251,39 @@ class ProduitController extends Controller
                 'error'   => $e->getMessage(),
                 'message' => 'Something went wrong in ProduitController.update',
             ]);
+        }
+    }
+
+    /**
+     * Bascule rapide de la disponibilité d'un produit sur la boutique en ligne.
+     * Endpoint léger : ne touche ni aux catégories ni à l'image.
+     */
+    public function setOnline(Request $request, int $id)
+    {
+        try {
+            $produit = Produit::find($id);
+            if (!$produit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Produit introuvable",
+                ], 404);
+            }
+
+            $produit->online       = (int) $request->input('online', 1) ? 1 : 0;
+            $produit->updated_user = Auth::id();
+            $produit->save();
+
+            return response()->json([
+                'success' => true,
+                'online'  => $produit->online,
+                'message' => $produit->online ? 'Produit visible en ligne' : 'Produit masqué en ligne',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error'   => $e->getMessage(),
+                'message' => 'Something went wrong in ProduitController.setOnline',
+            ], 500);
         }
     }
 

@@ -16,6 +16,7 @@ use App\Http\Controllers\API\TestCartController;
 use App\Http\Controllers\API\CategorieController;
 use App\Http\Controllers\API\EntrepriseController;
 use App\Http\Controllers\API\PermissionController;
+use App\Http\Controllers\API\BoutiqueController;
 
 Route::group(['prefix' => '/v1'], function () {
     Route::post('registered', [AuthController::class, 'registered']);
@@ -38,6 +39,14 @@ Route::group(['prefix' => '/v1'], function () {
     Route::get('orders', [OrderController::class, 'index']);
     Route::get('orders/{id}', [OrderController::class, 'show']);
     Route::get('orders/{id}/items', [OrderController::class, 'items']);
+
+    // BOUTIQUE EN LIGNE (public - landing page / QR code)
+    Route::get('boutique/info', [BoutiqueController::class, 'info']);
+    Route::get('boutique/products', [BoutiqueController::class, 'products']);
+    Route::get('boutique/categories', [BoutiqueController::class, 'categories']);
+    Route::post('boutique/order', [BoutiqueController::class, 'store']);
+    Route::get('boutique/qrcode', [BoutiqueController::class, 'qrcode']);
+    Route::get('boutique/poster', [BoutiqueController::class, 'poster']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -117,6 +126,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // PRODUITS
         Route::get('produits', [ProduitController::class, 'index']);
         Route::get('produits_stock', [ProduitController::class, 'stocks'])->name("stocks");
+        Route::post('produits/{id}/online', [ProduitController::class, 'setOnline']);
         Route::post('produits', [ProduitController::class, 'store']);
         Route::post('produits/{id}', [ProduitController::class, 'update']);
         Route::delete('produits/{id}', [ProduitController::class, 'destroy']);
@@ -134,6 +144,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // POS
         Route::get('pos_categories', [ProduitController::class, 'pos_categorie']);
         Route::get('pos_produit_by_categorie/{categoryId}', [ProduitController::class, 'pos_produit_by_categorie']);
+
+        // BOUTIQUE EN LIGNE (back-office - gestion des commandes)
+        Route::get('boutique/orders', [BoutiqueController::class, 'index']);
+        Route::get('boutique/orders/{id}', [BoutiqueController::class, 'show']);
+        Route::post('boutique/orders/{id}/status', [BoutiqueController::class, 'updateStatus']);
 
         // SCAN (corrigé)
         Route::post('scan', [TestCartController::class, 'scan']);
