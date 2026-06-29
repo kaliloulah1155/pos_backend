@@ -169,7 +169,7 @@ class ProduitController extends Controller
                 'selling_price'  => $request->selling_price ?? 0,
                 'quantite'       => $request->quantite       ?? 0,
                 'online'         => (int) $request->input('online', 1),
-                'fournisseur_id' => $request->fournisseur_id ?? null,
+                'fournisseur_id' => intval($request->fournisseur_id) > 0 ? intval($request->fournisseur_id) : null,
                 'created_user'   => Auth::id(),
             ]);
 
@@ -235,7 +235,9 @@ class ProduitController extends Controller
             $produit->selling_price  = intval($request->selling_price)  ?? $produit->selling_price;
             $produit->quantite       = intval($request->quantite)       ?? $produit->quantite;
             $produit->online         = $request->has('online') ? (int) $request->online : $produit->online;
-            $produit->fournisseur_id = intval($request->fournisseur_id) ?? $produit->fournisseur_id;
+            // fournisseur_id : un id valide (>0) sinon NULL (la FK refuse 0)
+            $fid = intval($request->input('fournisseur_id'));
+            $produit->fournisseur_id = $fid > 0 ? $fid : null;
             $produit->updated_user   = Auth::id();
 
             $produit->categories()->sync(json_decode($request->input('categories')));

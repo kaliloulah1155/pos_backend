@@ -8,9 +8,10 @@ class StoreRequest extends FormRequest
 {
     public function rules(): array
     {
+        // Unicité uniquement parmi les produits NON supprimés (deleted_at IS NULL)
         return [
-            'libelle' => 'required|string|max:255|unique:produits',
-            'barcode' => 'nullable|string|unique:produits,barcode',  // ← ajouté
+            'libelle' => 'required|string|max:255|unique:produits,libelle,NULL,id,deleted_at,NULL',
+            'barcode' => 'nullable|string|unique:produits,barcode,NULL,id,deleted_at,NULL',
         ];
     }
 
