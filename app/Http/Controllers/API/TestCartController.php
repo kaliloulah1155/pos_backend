@@ -321,6 +321,58 @@ class TestCartController extends Controller
         ], 201);
     }
 
+    /**
+     * Génère le reçu PDF d'une commande (ticket 80 mm).
+     * Utilise les procédures GetPos / GetPosItem (libellé figé côté ligne de vente).
+     */
+    public function pdfOrder($id)
+    {
+        try {
+            $resPos = DB::select('CALL GetPos(?)', [intval($id)]);
+
+            if (empty($resPos)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Commande introuvable',
+                ], 404);
+            }
+
+            $resPosItems = DB::select('CALL GetPosItem(?)', [intval($id)]);
+
+            // Entreprise (le template y accède directement : on garantit un objet)
+            $resEnterp = Entreprise::first() ?? (object) [
+                'image' => null, 'libelle' => '', 'localisation' => '',
+                'phone_1' => '', 'phone_2' => '', 'phone_fixe' => '', 'web' => '',
+            ];
+
+            // Logo embarqué en base64 (dompdf ne va pas chercher les images distantes)
+            $mimeType    = null;
+            $base64Image = null;
+            if (!empty($resEnterp->image)) {
+                $path = public_path('images/entreprise/' . $resEnterp->image);
+                if (is_file($path)) {
+                    $mimeType    = @mime_content_type($path) ?: 'image/png';
+                    $base64Image = base64_encode(file_get_contents($path));
+                }
+            }
+
+            // Marquer le ticket comme imprimé
+            Pos::where('id', $id)->update(['print_status' => 1]);
+
+            $pdf = PDF::loadView('pdf.print_order', compact(
+                'resPos', 'resPosItems', 'resEnterp', 'mimeType', 'base64Image'
+            ))->setPaper([0, 0, 226.77, 700]); // ticket 80 mm de large
+
+            return $pdf->stream('commande-' . $id . '.pdf');
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error'   => $e->getMessage(),
+                'message' => 'Erreur dans TestCartController.pdfOrder',
+            ], 500);
+        }
+    }
+
     public function checkout($id, $qte)
     {
         DB::beginTransaction();
