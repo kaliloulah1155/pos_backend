@@ -184,7 +184,9 @@ class OrderController extends Controller
          ->select(
              'ps.created_at',
              'ps.id as order_id',
-             'pod.libelle as produit','item.qte','item.price','item.price_by_qte'
+             // Libellé figé à la vente, repli sur le produit s'il existe encore
+             DB::raw('COALESCE(item.libelle, pod.libelle) as produit'),
+             'item.qte','item.price','item.price_by_qte'
          )
          ->leftJoin('pos as ps', 'item.pos_id', '=', 'ps.id')
          ->leftJoin('produits as pod', 'item.item_id', '=', 'pod.id')

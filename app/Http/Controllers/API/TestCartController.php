@@ -290,9 +290,14 @@ class TestCartController extends Controller
         $cartItems = Cart::session($userId)->getContent();
 
         foreach ($cartItems as $cartItem) {
+            $produit = Produit::find($cartItem->id);
+
             $data_pos_cart_items[] = [
                 'pos_id'       => $pos->id,
                 'item_id'      => $cartItem->id,
+                // Instantané : la ligne reste lisible même si le produit est supprimé
+                'libelle'      => $produit->libelle ?? $cartItem->name,
+                'image'        => $produit->image ?? null,
                 'qte'          => $cartItem->quantity,
                 'price'        => $cartItem->price,
                 'price_by_qte' => $cartItem->price * $cartItem->quantity,

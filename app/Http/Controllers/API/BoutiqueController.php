@@ -29,44 +29,82 @@ class BoutiqueController extends Controller
      |========================================================= */
 
     /**
-     * Liste publique des produits disponibles à la commande.
-     * Renvoie le prix numérique (pour le calcul du panier) + le prix formaté.
+     * Liste publique paginée des produits disponibles à la commande.
+     *
+     * Paramètres : page, per_page (1-100, défaut 18), search, categorie_id.
+     * Réponse rétrocompatible : 'data' (les produits) + 'meta' (pagination).
      */
-    public function products()
+    public function products(Request $request)
     {
         try {
-            $produits = DB::table('produits')
+            $perPage     = min(max((int) $request->query('per_page', 18), 1), 100);
+            $search      = trim((string) $request->query('search', ''));
+            $categorieId = (int) $request->query('categorie_id', 0);
+
+            // Requête sur les produits seuls : pas de jointure => la pagination reste juste
+            $query = DB::table('produits')
                 ->select(
                     'produits.id',
                     'produits.libelle',
                     'produits.image',
                     'produits.selling_price',
-                    'produits.quantite',
-                    'categories.id as categorie_id',
-                    'categories.libelle as category_name'
+                    'produits.quantite'
                 )
-                ->leftJoin('categorie_produit', 'produits.id', '=', 'categorie_produit.produit_id')
-                ->leftJoin('categories', 'categorie_produit.categorie_id', '=', 'categories.id')
                 ->whereNull('produits.deleted_at')
-                ->where('produits.online', 1)
-                ->get();
+                ->where('produits.online', 1);
 
-            $mapped = $produits->groupBy('id')->map(function ($group) {
-                $p = $group->first();
+            if ($search !== '') {
+                $query->where('produits.libelle', 'like', '%' . $search . '%');
+            }
+
+            if ($categorieId > 0) {
+                $query->whereExists(function ($q) use ($categorieId) {
+                    $q->select(DB::raw(1))
+                      ->from('categorie_produit')
+                      ->whereColumn('categorie_produit.produit_id', 'produits.id')
+                      ->where('categorie_produit.categorie_id', $categorieId);
+                });
+            }
+
+            $paginator = $query->orderBy('produits.libelle')->paginate($perPage);
+
+            // Catégories des seuls produits de la page courante
+            $ids  = collect($paginator->items())->pluck('id')->all();
+            $cats = empty($ids) ? collect() : DB::table('categorie_produit')
+                ->join('categories', 'categorie_produit.categorie_id', '=', 'categories.id')
+                ->whereIn('categorie_produit.produit_id', $ids)
+                ->select(
+                    'categorie_produit.produit_id',
+                    'categories.id as cat_id',
+                    'categories.libelle as cat_libelle'
+                )
+                ->get()
+                ->groupBy('produit_id');
+
+            $data = collect($paginator->items())->map(function ($p) use ($cats) {
+                $c = $cats->get($p->id, collect());
                 return [
-                    'id'              => $p->id,
-                    'libelle'         => $p->libelle,
-                    'image'           => $p->image ? env('IMAGE_PATH_PRODUITS') . $p->image : null,
-                    'prix'            => intval($p->selling_price),
-                    'prix_format'     => (new AmountFormatService)->formatAmount($p->selling_price) . ' F CFA',
-                    'quantite'        => intval($p->quantite),
-                    'en_stock'        => intval($p->quantite) > 0,
-                    'categorie_ids'   => $group->pluck('categorie_id')->filter()->unique()->values()->all(),
-                    'categorie_noms'  => $group->pluck('category_name')->filter()->unique()->values()->all(),
+                    'id'             => $p->id,
+                    'libelle'        => $p->libelle,
+                    'image'          => $p->image ? env('IMAGE_PATH_PRODUITS') . $p->image : null,
+                    'prix'           => intval($p->selling_price),
+                    'prix_format'    => (new AmountFormatService)->formatAmount($p->selling_price) . ' F CFA',
+                    'quantite'       => intval($p->quantite),
+                    'en_stock'       => intval($p->quantite) > 0,
+                    'categorie_ids'  => $c->pluck('cat_id')->unique()->values()->all(),
+                    'categorie_noms' => $c->pluck('cat_libelle')->unique()->values()->all(),
                 ];
-            });
+            })->values()->all();
 
-            return response()->json(['data' => $mapped->values()->all()]);
+            return response()->json([
+                'data' => $data,
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'per_page'     => $paginator->perPage(),
+                    'total'        => $paginator->total(),
+                    'last_page'    => $paginator->lastPage(),
+                ],
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -144,6 +182,9 @@ class BoutiqueController extends Controller
 
                 $cartLines[] = [
                     'item_id'      => $produit->id,
+                    // Instantané : la ligne reste lisible même si le produit est supprimé
+                    'libelle'      => $produit->libelle,
+                    'image'        => $produit->image,
                     'qte'          => $qte,
                     'price'        => $price,
                     'price_by_qte' => $price * $qte,
@@ -410,7 +451,10 @@ SVG;
                 $query->where('ps.created_at', '<=', $endDate);
             }
 
-            $orders = $query->get();
+            // Pagination SERVEUR (page / per_page)
+            $perPage   = min(max((int) $request->query('per_page', 15), 1), 100);
+            $paginator = $query->paginate($perPage);
+            $orders    = $paginator->items();
 
             $summaryQuery = DB::table('pos')
                 ->where('order_type', 'online');
@@ -433,6 +477,12 @@ SVG;
             return response()->json([
                 'success' => true,
                 'data'    => $orders,
+                'meta'    => [
+                    'current_page' => $paginator->currentPage(),
+                    'per_page'     => $paginator->perPage(),
+                    'total'        => $paginator->total(),
+                    'last_page'    => $paginator->lastPage(),
+                ],
                 'summary' => $summary,
             ]);
 
@@ -460,10 +510,24 @@ SVG;
             }
 
             $items = DB::table('pos_cart_items as item')
-                ->select('pod.libelle as produit', 'item.qte', 'item.price', 'item.price_by_qte')
+                ->select(
+                    // Libellé/image figés à la vente, repli sur le produit s'il existe encore
+                    DB::raw('COALESCE(item.libelle, pod.libelle) as produit'),
+                    DB::raw('COALESCE(item.image, pod.image) as produit_image'),
+                    'item.qte',
+                    'item.price',
+                    'item.price_by_qte'
+                )
                 ->leftJoin('produits as pod', 'item.item_id', '=', 'pod.id')
                 ->where('item.pos_id', $id)
-                ->get();
+                ->get()
+                ->map(function ($it) {
+                    $it->image = $it->produit_image
+                        ? env('IMAGE_PATH_PRODUITS') . $it->produit_image
+                        : null;
+                    unset($it->produit_image);
+                    return $it;
+                });
 
             return response()->json([
                 'success' => true,
